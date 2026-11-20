@@ -24,6 +24,26 @@ const NEAR=[1,-1,2,-2,10,-10,9,-9,11,-11];
 function qAdd(){const[a,b]=addPair(),c=a+b;return calc(`${ar(a)} + ${ar(b)} = ؟`,`${ar(a)} + ${ar(b)} = ${ar(c)}`,c,NEAR,1,`a${a}+${b}`)}
 function qSub(){const[a,b]=addPair(),c=a+b;return calc(`${ar(c)} − ${ar(b)} = ؟`,`${ar(c)} − ${ar(b)} = ${ar(a)}`,a,NEAR,0,`s${c}-${b}`)}
 
+/* Square Roots (الجذور التربيعية) */
+function qSqrt(){
+  if(level===0){
+    const r=rnd(1,10),sq=r*r;
+    return calc(`√${ar(sq)} = ؟`,`√${ar(sq)} = ${ar(r)}`,r,[1,-1,2,-2,3,-3,4],1,`sq${sq}`);
+  }
+  if(level===1){
+    const r=rnd(2,15),sq=r*r;
+    return calc(`√${ar(sq)} = ؟`,`√${ar(sq)} = ${ar(r)}`,r,[1,-1,2,-2,3,-3,5,-5],1,`sq${sq}`);
+  }
+  // Level 2 (Hard): √1 to √400 (roots 1–20) + simple expressions like √a + √b or √a − √b
+  if(Math.random()<.45){
+    const a=rnd(2,12),b=rnd(1,a),op=Math.random()<.65?'+':'−';
+    const sqA=a*a,sqB=b*b,ans=op==='+'?a+b:a-b;
+    return calc(`√${ar(sqA)} ${op} √${ar(sqB)} = ؟`,`√${ar(sqA)} ${op} √${ar(sqB)} = ${ar(ans)}`,ans,[1,-1,2,-2,3,-3,4,-4],0,`sqe${sqA}${op}${sqB}`);
+  }
+  const r=rnd(4,20),sq=r*r;
+  return calc(`√${ar(sq)} = ؟`,`√${ar(sq)} = ${ar(r)}`,r,[1,-1,2,-2,3,-3,4,-4,10,-10],1,`sq${sq}`);
+}
+
 /* Geometry */
 const svgW=i=>`<svg viewBox="0 0 150 120" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">${i}</svg>`;
 const lbl=(x,y,t)=>`<text x="${x}" y="${y}" fill="currentColor" stroke="none" font-size="14" font-weight="800" text-anchor="middle">${t}</text>`;
@@ -73,10 +93,12 @@ const GEO=[
   ()=>pickOne([['وجهًا','faces',6,[-2,2,-1,6]],['حرفًا','edges',12,[-4,-6,2,6]],['رأسًا','verts',8,[-2,-4,2,4]]].map(([w,k,v,d])=>()=>gNum('gc'+k,`كم ${w} للمكعب؟`,v,d,1)))()]
 ];
 function qGeo(){return Object.assign({kind:'geo',extra:8},pickOne(GEO[level])())}
-const GEN={mul:qMul,div:qDiv,add:qAdd,sub:qSub,geo:qGeo};
+const GEN={mul:qMul,div:qDiv,add:qAdd,sub:qSub,sqrt:qSqrt,geo:qGeo};
 function makeQ(p){
   const c=cfgOf(p);level=c.level;topics=new Set(c.topics);tables=new Set(c.tables);
-  const list=[...topics],rec=p.recent;let x,k,t=0;
+  const list=[...topics].filter(k=>GEN[k]);
+  if(!list.length)list.push('mul');
+  const rec=p.recent;let x,k,t=0;
   do{k=pickOne(list);x=GEN[k]()}while(rec.includes(x.key)&&++t<25);
   rec.push(x.key);if(rec.length>10)rec.shift();
   if(!x.show)x.show=x.ans;

@@ -1,12 +1,12 @@
 /* ---------- Client ---------- */
-let cRetry=0,cLast=0,cConn=null,cTimer=0,cCode='',cSeated=false,cBarOn=false;
+let cRetry=0,cLast=0,cConn=null,cTimer=0,cCode='',cSeated=false,cBarOn=false,cLastView=null;
 const cToken=()=>{const k='sullam-token';let t;try{t=localStorage.getItem(k)}catch(e){}if(!t){t=uid()+uid();try{localStorage.setItem(k,t)}catch(e){}}return t};
 
 function connMsg(t,m,back){show('connect');$('#connT').textContent=t;$('#connM').textContent=m;$('#connBack').hidden=!back}
 $('#connBack').onclick=()=>{location.href=location.pathname+(PS?'?ps='+PS:'')};
 
 function startClient(c){
-  mode='client';cCode=c;keepAwake();connMsg('جارٍ الاتصال…','نبحث عن المباراة '+c);
+  mode='client';cCode=c;cBoardSig='';keepAwake();connMsg('جارٍ الاتصال…','نبحث عن المباراة '+c);
   try{if(peer)peer.destroy()}catch(e){}
   peer=new Peer(undefined,peerOpts());
   peer.on('open',()=>cConnect());
@@ -47,18 +47,40 @@ function buzz(k){try{navigator.vibrate&&navigator.vibrate({turn:[120,60,120],goo
 function cData(m){
   cLast=Date.now();
   if(m.t==='ping')return;
+  if(m.t==='fx'){
+    if(typeof spawnFx==='function')spawnFx('#cFx',m.e,m.color);
+    return;
+  }
   if(m.t==='pickme'){
     show('pick');
     $('#pickList').innerHTML=m.list.map(p=>`<button class="btn alt pk" data-p="${esc(p.id)}">${esc(p.emoji)} ${esc(p.name)}</button>`).join('')||'';
   }
-  if(m.t==='wait'){cSeated=true;show('client');setStatus('');$('#cMe').innerHTML=`<p class="hint" style="text-align:center;font-size:20px">مرحبًا ${esc(m.name)}! بانتظار بدء المباراة…</p>`;$('#ctlC').innerHTML=''}
-  if(m.t==='full')connMsg('المباراة مكتملة','بدأت المباراة أو اكتمل عدد اللاعبين.',true);
-  if(m.t==='kicked'){try{localStorage.removeItem('sullam-token')}catch(e){}cSeated=false;cConn=null;connMsg('خرجت من الغرفة','أخرجك الوالد من هذه المباراة.',true)}
+  if(m.t==='wait'){
+    cSeated=true;show('client');setStatus('');
+    $('#clientPlay').hidden=true;
+    $('#cWaitBox').hidden=false;
+    $('#cWaitBox').innerHTML=`<p class="hint" style="text-align:center;font-size:20px;margin:14px 0">مرحبًا <b>${esc(m.name)}</b>! بانتظار بدء المباراة…</p>`;
+    $('#ctlC').innerHTML='';
+  }
+  if(m.t==='full')connMsg('المباراة مكتملة','بدأت المباراة أو اكتمل عدد اللاعبين (٦ لاعبين كحد أقصى).',true);
+  if(m.t==='kicked'){try{localStorage.removeItem('sullam-token')}catch(e){}cSeated=false;cConn=null;connMsg('خرجت من الغرفة','أخرجك المشرف من هذه المباراة.',true)}
   if(m.t==='bye'){cConn=null;clearInterval(cTimer);connMsg('انتهت الجلسة','أغلق الجهاز الأساسي الغرفة.',true)}
   if(m.t==='view'){
-    cSeated=true;show('client');setStatus('');
+    cSeated=true;cLastView=m;show('client');setStatus('');
+    $('#cWaitBox').hidden=true;
+    $('#clientPlay').hidden=false;
     if(m.buzz)buzz(m.buzz);
     $('#cMe').innerHTML=`<div class="me"><span style="background:${m.color}">${esc(m.emoji)}</span><div><b>${esc(m.name)}</b><small>المركز ${ar(m.rank)} من ${ar(m.n)}، خانة ${ar(m.pos)} من ${ar(m.last)}${m.streak>1?`، 🔥 ${ar(m.streak)}`:''}</small></div><strong>${ar(m.score)}</strong></div>`;
+    if(m.players){
+      $('#cScore').innerHTML=m.players.map(p=>`<div class="pl${p.turn?' on':''}"><i class="dot" style="background:${p.color}"></i><div><b>${esc(p.emoji)} ${esc(p.name)}</b><small>${ar(p.score)} نقطة، خانة ${ar(p.pos)}</small></div></div>`).join('');
+    }
+    if(m.board&&m.players){
+      syncClientBoard(m.board,m.players);
+    }
+    const fsHud=$('#clientFsHud');
+    if(fsHud){
+      fsHud.innerHTML=`<span><i class="dot" style="background:${m.color}"></i> <b>${esc(m.emoji)} ${esc(m.name)}</b> (خانة ${ar(m.pos)}/${ar(m.last)})</span><span>${m.turn?'🎯 دورك الآن!':`دور ${esc(m.cur)}`}</span><span>🎲 ${m.dice?ar(m.dice):'-'}</span>`;
+    }
     renderCtl($('#ctlC'),m,x=>{try{cConn.send(x)}catch(e){}});
   }
 }

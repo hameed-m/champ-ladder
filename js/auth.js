@@ -77,7 +77,7 @@ function getAllAdmins(){
   if(Array.isArray(store.admins)){
     store.admins.forEach(a=>{
       const em=normalizeAdminEmail(a&&a.email);
-      if(em&&a.hash&&em!==ROOT_ADMIN.email){
+      if(em&&a.hash&&em!==ROOT_ADMIN.email&&!list.some(x=>x.email===em)){
         list.push({email:em,hash:a.hash,root:false});
       }
     });
@@ -100,6 +100,9 @@ function isAuthed(){return !!getSession()}
 async function loginAdmin(email,password){
   const em=normalizeAdminEmail(email);
   if(!em||!password)return{ok:false,msg:'أدخل البريد الإلكتروني وكلمة المرور.'};
+  if(typeof sbFetchAdmins==='function'){
+    await sbFetchAdmins();
+  }
   const admins=getAllAdmins();
   const h=await hashCreds(em,password);
   let found=admins.find(a=>a.email===em&&a.hash===h);
@@ -109,7 +112,12 @@ async function loginAdmin(email,password){
   }
   if(!found)return{ok:false,msg:'البريد الإلكتروني أو كلمة المرور غير صحيحة.'};
   try{localStorage.setItem(AUTH_KEY,JSON.stringify({email:found.email,hash:found.hash}))}catch(e){}
-  renderAuthUI();
+  switchAdminWorkspace(found.email);
+  if(typeof sbLoadAdminWorkspace==='function'){
+    await sbLoadAdminWorkspace(found.email);
+  }
+  if(typeof renderSetup==='function')renderSetup();
+  else renderAuthUI();
   return{ok:true};
 }
 
@@ -119,26 +127,40 @@ function logoutAdmin(){
 }
 
 async function addAdminAccount(email,password){
-  if(!isAuthed())return{ok:false,msg:'يجب تسجيل الدخول أولًا.'};
+  const sess=getSession();
+  if(!sess)return{ok:false,msg:'يجب تسجيل الدخول أولًا.'};
   const em=normalizeAdminEmail(email);
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em))return{ok:false,msg:'أدخل بريدًا إلكترونيًا صحيحًا.'};
   if(!password||password.length<4)return{ok:false,msg:'أدخل كلمة مرور (٤ أحرف على الأقل).'};
+  if(typeof sbFetchAdmins==='function')await sbFetchAdmins();
   if(getAllAdmins().some(a=>a.email===em))return{ok:false,msg:'هذا البريد مسجّل بالفعل ضمن المشرفين.'};
   const h=await hashCreds(em,password);
   store.admins=store.admins||[];
   store.admins.push({email:em,hash:h});
-  saveStore();
+  saveStoreLocal();
+
+  let cloudNote=' (تم الحفظ في قاعدة البيانات الدائمة Supabase)';
+  if(typeof sbUpsertAdmin==='function'){
+    try{
+      await sbUpsertAdmin(em,h,sess.email);
+      await sbFetchAdmins();
+    }catch(e){
+      cloudNote=' (تم الحفظ محليًا — تأكد من تشغيل supabase_schema.sql في Supabase)';
+    }
+  }
   renderAdminList();
-  return{ok:true,msg:`تمت إضافة المشرف ${em} بنجاح.`};
+  return{ok:true,msg:`تمت إضافة المشرف ${em} بنجاح${cloudNote}.`};
 }
 
-function removeAdminAccount(email){
+async function removeAdminAccount(email){
   if(!isAuthed())return;
   const em=normalizeAdminEmail(email);
   if(em===ROOT_ADMIN.email)return;
   store.admins=(store.admins||[]).filter(a=>normalizeAdminEmail(a.email)!==em);
-  saveStore();
-  // If current session was deleted, log out
+  saveStoreLocal();
+  if(typeof sbDeleteAdmin==='function'){
+    try{await sbDeleteAdmin(em)}catch(e){}
+  }
   if(!isAuthed()){renderAuthUI();return}
   renderAdminList();
 }
@@ -157,6 +179,7 @@ function renderAuthUI(){
   const loginBox=$('#loginBox'),hostPanel=$('#hostPanel');
   if(!loginBox||!hostPanel)return;
   if(sess){
+    if(store.activeAdmin!==sess.email)switchAdminWorkspace(sess.email);
     loginBox.hidden=true;
     hostPanel.hidden=false;
     $('#authUser').textContent=`👤 المشرف: ${sess.email}`;
@@ -168,10 +191,13 @@ function renderAuthUI(){
   }
 }
 
-function initAuth(){
+async function initAuth(){
   $('#loginBtn').onclick=async()=>{
+    const btn=$('#loginBtn');
     const em=$('#loginEmail').value,pw=$('#loginPass').value;
+    btn.disabled=true;
     const res=await loginAdmin(em,pw);
+    btn.disabled=false;
     if(!res.ok)$('#authErr').textContent=res.msg;
     else{$('#loginPass').value='';$('#authErr').textContent=''}
   };
@@ -182,8 +208,11 @@ function initAuth(){
   $('#logoutBtn').onclick=()=>{logoutAdmin()};
 
   $('#addAdmBtn').onclick=async()=>{
+    const btn=$('#addAdmBtn');
     const em=$('#newAdmEmail').value,pw=$('#newAdmPass').value,msg=$('#admMsg');
+    btn.disabled=true;
     const res=await addAdminAccount(em,pw);
+    btn.disabled=false;
     msg.textContent=res.msg;
     msg.className=res.ok?'ok':'';
     if(res.ok){$('#newAdmEmail').value='';$('#newAdmPass').value=''}
@@ -192,5 +221,17 @@ function initAuth(){
     const b=e.target.closest('[data-del-adm]');
     if(b)removeAdminAccount(b.dataset.delAdm);
   };
+
   renderAuthUI();
+  if(typeof sbFetchAdmins==='function'){
+    await sbFetchAdmins();
+    const sess=getSession();
+    if(sess){
+      switchAdminWorkspace(sess.email);
+      await sbLoadAdminWorkspace(sess.email);
+      if(typeof renderSetup==='function')renderSetup();
+    }else{
+      renderAuthUI();
+    }
+  }
 }

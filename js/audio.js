@@ -119,7 +119,7 @@ async function comment(parts,cap){
       if(VNAMES[part.name])await clipPlay('name:'+part.name,tok);
       else{
         const nm=part.named&&arVoices().length?await speakDevice(part.name):false;
-        if(!nm)await clipPlay('p_'+(part.i+1),tok);
+        if(!nm)await clipPlay('p_'+Math.min(4,(part.i||0)+1),tok);
       }
     }else if(/^n\d/.test(part)){
       if(!skipNum)await clipPlay(part,tok);

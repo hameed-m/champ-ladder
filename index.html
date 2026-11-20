@@ -12,7 +12,7 @@
 
 <section id="setup" class="card" hidden>
   <h1>سلّم الأبطال</h1>
-  <p class="lead">أجب بسرعة وبدقة لتتقدم. السلّم يرفعك والحية تُنزلك، ومن يصل أولًا إلى الخانة الأخيرة يفوز.</p>
+  <p class="lead">أجب بسرعة وبدقة لتتقدم. السلّم يرفعك والحية تُنزلك، ومن يصل بالرقم الدقيق إلى الخانة الأخيرة يفوز.</p>
 
   <!-- الانضمام متاح للجميع بدون تسجيل دخول -->
   <div class="joinrow">
@@ -23,7 +23,7 @@
   <!-- صندوق تسجيل الدخول للمشرف لإنشاء مباراة جديدة -->
   <div id="loginBox" class="auth-box">
     <h2>🔒 تسجيل الدخول لإنشاء مباراة جديدة</h2>
-    <p class="hint">الانضمام برمز المباراة أعلاه متاح للجميع، أما إنشاء مباراة جديدة وإدارة الإعدادات فيتطلب حساب مشرف مصرح له.</p>
+    <p class="hint">الانضمام برمز المباراة أعلاه متاح للجميع، أما إنشاء مباراة جديدة وإدارة الغرف والإعدادات فيتطلب حساب مشرف مصرح له.</p>
     <div class="auth-fields">
       <input class="name" id="loginEmail" type="email" dir="ltr" autocomplete="username" placeholder="البريد الإلكتروني" aria-label="البريد الإلكتروني">
       <input class="name" id="loginPass" type="password" dir="ltr" autocomplete="current-password" placeholder="كلمة المرور" aria-label="كلمة المرور">
@@ -35,13 +35,16 @@
   <!-- لوحة إعداد وإنشاء المباراة (تظهر فقط بعد تسجيل دخول المشرف) -->
   <div id="hostPanel" hidden>
     <div class="admin-bar">
-      <span id="authUser"></span>
+      <div>
+        <span id="authUser"></span>
+        <small id="cloudStatus" class="cloud-badge">☁️ جارٍ الاتصال بقاعدة البيانات…</small>
+      </div>
       <button class="mini" id="logoutBtn">تسجيل الخروج</button>
     </div>
 
     <details class="up">
-      <summary>👥 إدارة المشرفين (إضافة أو حذف حسابات)</summary>
-      <p class="hint" style="margin-top:6px">يمكنك إضافة مشرفين آخرين ليستطيعوا تسجيل الدخول وإنشاء مباريات جديدة.</p>
+      <summary>👥 إدارة المشرفين (حفظ دائم في Supabase)</summary>
+      <p class="hint" style="margin-top:6px">يمكنك إضافة مشرفين آخرين ليستطيعوا تسجيل الدخول وإنشاء غرفهم ومبارياتهم الخاصة من أي جهاز.</p>
       <ul id="admList" class="adm-list"></ul>
       <div class="auth-fields">
         <input class="name" id="newAdmEmail" type="email" dir="ltr" placeholder="البريد الإلكتروني للمشرف الجديد" aria-label="البريد الإلكتروني للمشرف الجديد">
@@ -51,12 +54,30 @@
       <button class="btn alt" id="addAdmBtn" style="width:100%">إضافة مشرف</button>
     </details>
 
+    <!-- إدارة الغرف الخاصة بالمشرف -->
+    <div class="room-box">
+      <div class="room-head">
+        <span class="h" style="margin:0">🏠 غرف المشرف (لكل غرفة لاعبوها وإعداداتها)</span>
+        <span id="roomBadge" class="adm-badge"></span>
+      </div>
+      <div class="joinrow" style="margin-top:8px">
+        <select id="roomSelect" class="room-sel" aria-label="اختر الغرفة"></select>
+        <button class="mini" id="newCodeBtn" title="تجديد رمز الغرفة">🔄 رمز جديد</button>
+        <button class="mini" id="delRoomBtn" title="حذف الغرفة الحالية">🗑 حذف الغرفة</button>
+      </div>
+      <div class="joinrow">
+        <input class="name" id="newRoomName" maxlength="28" placeholder="اسم غرفة جديدة (مثال: الصف الرابع، أبطال الرياضيات)" aria-label="اسم غرفة جديدة">
+        <button class="btn alt" id="addRoomBtn">إنشاء غرفة</button>
+      </div>
+      <p id="roomMsg" role="status"></p>
+    </div>
+
     <span class="h">طريقة اللعب</span>
     <div class="row" id="mode"></div>
     <p id="modeHint" class="hint"></p>
     <span class="h">حجم الساحة</span>
     <div class="row" id="size"></div>
-    <span class="h">قواعد اللعب</span>
+    <span class="h">قواعد اللعب (السلالم والحيات وإرجاع الخصم وغيرها)</span>
     <div class="row" id="rules"></div>
     <span class="h">عدالة المنافسة</span>
     <div class="row" id="fair"></div>
@@ -65,9 +86,9 @@
     <span class="h">موضوعات الأسئلة (اختر موضوعًا أو أكثر)</span>
     <div class="row" id="top"></div>
     <div id="tblBox"><span class="h">الجداول (للضرب والقسمة)</span><div class="row" id="tbl"></div></div>
-    <span class="h">اللاعبون</span>
+    <span class="h">اللاعبون في هذه الغرفة (من ١ إلى ٦ لاعبين)</span>
     <div id="profiles"></div>
-    <div class="joinrow"><input class="name" id="newName" maxlength="14" placeholder="اسم لاعب جديد" aria-label="اسم لاعب جديد"><button class="btn alt" id="addP">إضافة</button></div>
+    <div class="joinrow"><input class="name" id="newName" maxlength="14" placeholder="اسم لاعب جديد في هذه الغرفة" aria-label="اسم لاعب جديد"><button class="btn alt" id="addP">إضافة</button></div>
     <div class="row" style="margin-top:8px"><button class="mini" id="exportB">حفظ نسخة احتياطية</button><label class="mini">استعادة نسخة<input type="file" id="importB" accept="application/json"></label></div>
     <button class="btn alt" id="testVoice" style="width:100%;margin:6px 0 10px">🎙️ اختبار المعلّق والجمهور</button>
     <p id="voiceMsg" style="margin:0 0 10px"></p>
@@ -83,8 +104,11 @@
 </section>
 
 <section id="lobby" class="card" hidden>
-  <h2 style="font-size:32px;margin:0 0 6px">غرفة الانتظار</h2>
-  <p class="lead">امسح الرمز بكاميرا كل جهاز، أو افتح رابط اللعبة واكتب رمز المباراة.</p>
+  <div class="top" style="margin-bottom:4px">
+    <h2 style="font-size:32px;margin:0">غرفة الانتظار</h2>
+    <span id="lobRoomName" class="adm-badge"></span>
+  </div>
+  <p class="lead">امسح الرمز بكاميرا كل جهاز، أو افتح رابط اللعبة واكتب رمز المباراة (من ١ إلى ٦ لاعبين).</p>
   <div class="lob">
     <div id="qr" aria-label="رمز QR للانضمام"></div>
     <div>
@@ -97,10 +121,22 @@
 </section>
 
 <section id="game" hidden>
-  <div class="top"><h2>سلّم الأبطال</h2><button class="btn alt iconb" id="crowdBtn" aria-pressed="true" aria-label="صوت الجمهور" style="margin-inline-start:auto">📣</button><button class="btn alt iconb" id="snd" aria-pressed="true" aria-label="كل الأصوات">🔊</button><button class="btn alt iconb" id="quit">قائمة البداية</button></div>
+  <div class="top">
+    <h2>سلّم الأبطال</h2>
+    <button class="btn alt iconb" id="crowdBtn" aria-pressed="true" aria-label="صوت الجمهور" style="margin-inline-start:auto">📣</button>
+    <button class="btn alt iconb" id="snd" aria-pressed="true" aria-label="كل الأصوات">🔊</button>
+    <button class="btn alt iconb" id="quit">قائمة البداية</button>
+  </div>
   <div class="score" id="score"></div>
   <div class="play">
-    <div class="bwrap"><svg class="board" id="board" viewBox="0 0 600 600" role="img" aria-label="لوحة اللعبة"></svg><div id="fx" aria-hidden="true"></div></div>
+    <div class="bwrap" id="hostBwrap">
+      <div class="bbar">
+        <button class="mini fs-btn" type="button" onclick="toggleBoardFullscreen('hostBwrap')" aria-pressed="false">⛶ ملء الشاشة</button>
+      </div>
+      <div class="fs-hud" id="hostFsHud"></div>
+      <svg class="board" id="board" viewBox="0 0 600 600" role="img" aria-label="لوحة اللعبة"></svg>
+      <div id="fx" aria-hidden="true"></div>
+    </div>
     <div class="card">
       <div id="hp">
         <div class="who"><b id="wt"></b><div class="dicebox" id="hDice" aria-live="polite">🎲</div></div>
@@ -112,7 +148,7 @@
       <div id="ctl"></div>
       <p id="cap" style="margin:8px 0 0;text-align:center;font-size:15px;opacity:.85"></p>
       <div id="pc" class="pc">
-        <span class="h" style="margin:0 0 4px;width:100%">تحكم الوالد</span>
+        <span class="h" style="margin:0 0 4px;width:100%">تحكم المشرف</span>
         <button class="mini" id="pPause">⏸ إيقاف</button><button class="mini" id="pNewQ">🔄 سؤال جديد</button><button class="mini" id="pSkip">⏭ تخطي الدور</button><button class="mini" id="pLocal" hidden>أكمل على هذا الجهاز</button>
       </div>
     </div>
@@ -126,10 +162,24 @@
 </section>
 
 <section id="client" hidden>
-  <div class="card">
-    <div id="cStatus" class="cs" role="status"></div>
-    <div id="cMe"></div>
-    <div id="ctlC"></div>
+  <div id="cStatus" class="cs" role="status"></div>
+  <div id="cWaitBox" class="card" hidden></div>
+  <div id="clientPlay" hidden>
+    <div class="score" id="cScore"></div>
+    <div class="play">
+      <div class="bwrap" id="clientBwrap">
+        <div class="bbar">
+          <button class="mini fs-btn" type="button" onclick="toggleBoardFullscreen('clientBwrap')" aria-pressed="false">⛶ ملء الشاشة</button>
+        </div>
+        <div class="fs-hud" id="clientFsHud"></div>
+        <svg class="board" id="cBoard" viewBox="0 0 600 600" role="img" aria-label="لوحة اللعبة"></svg>
+        <div id="cFx" class="fx-layer" aria-hidden="true"></div>
+      </div>
+      <div class="card">
+        <div id="cMe"></div>
+        <div id="ctlC"></div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -162,6 +212,7 @@
 <script src="js/vendor.js"></script>
 <script src="js/aud-data.js"></script>
 <script src="js/state.js"></script>
+<script src="js/supabase.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/audio.js"></script>
 <script src="js/board.js"></script>
