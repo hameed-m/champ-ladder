@@ -1,9 +1,32 @@
-/* ---------- Client ---------- */
+/* ---------- Client (Player Device with Compact Stats & Hideable Arena) ---------- */
 let cRetry=0,cLast=0,cConn=null,cTimer=0,cCode='',cSeated=false,cBarOn=false,cLastView=null;
+let cArenaHidden=false,cArenaManualForQ=null;
+
 const cToken=()=>{const k='sullam-token';let t;try{t=localStorage.getItem(k)}catch(e){}if(!t){t=uid()+uid();try{localStorage.setItem(k,t)}catch(e){}}return t};
 
 function connMsg(t,m,back){show('connect');$('#connT').textContent=t;$('#connM').textContent=m;$('#connBack').hidden=!back}
 $('#connBack').onclick=()=>{location.href=location.pathname+(PS?'?ps='+PS:'')};
+
+function setClientArenaHidden(hide,isManual){
+  cArenaHidden=!!hide;
+  if(isManual&&cLastView){
+    cArenaManualForQ=cLastView.qid||cLastView.phase||'manual';
+  }
+  const bwrap=$('#clientBwrap');
+  const grid=$('#clientPlayGrid');
+  const btn=$('#toggleClientArena');
+  if(bwrap)bwrap.hidden=cArenaHidden;
+  if(grid)grid.classList.toggle('arena-hidden',cArenaHidden);
+  if(btn){
+    const posTxt=cLastView?` (خانة ${ar(cLastView.pos)}/${ar(cLastView.last)})`:'';
+    btn.textContent=cArenaHidden?`🗺️ إظهار الساحة${posTxt}`:'🗺️ إخفاء الساحة';
+    btn.setAttribute('aria-expanded',!cArenaHidden);
+  }
+}
+
+if($('#toggleClientArena')){
+  $('#toggleClientArena').onclick=()=>setClientArenaHidden(!cArenaHidden,true);
+}
 
 function startClient(c){
   mode='client';cCode=c;cBoardSig='';keepAwake();connMsg('جارٍ الاتصال…','نبحث عن المباراة '+c);
@@ -67,16 +90,41 @@ function cData(m){
   if(m.t==='bye'){cConn=null;clearInterval(cTimer);connMsg('انتهت الجلسة','أغلق الجهاز الأساسي الغرفة.',true)}
   if(m.t==='view'){
     cSeated=true;cLastView=m;show('client');setStatus('');
+    if(m.theme&&!themePref.userPicked)setAppTheme(m.theme,false);
     $('#cWaitBox').hidden=true;
     $('#clientPlay').hidden=false;
     if(m.buzz)buzz(m.buzz);
-    $('#cMe').innerHTML=`<div class="me"><span style="background:${m.color}">${esc(m.emoji)}</span><div><b>${esc(m.name)}</b><small>المركز ${ar(m.rank)} من ${ar(m.n)}، خانة ${ar(m.pos)} من ${ar(m.last)}${m.streak>1?`، 🔥 ${ar(m.streak)}`:''}</small></div><strong>${ar(m.score)}</strong></div>`;
+
+    /* Compact Self Stats Bar */
+    $('#cMe').innerHTML=`<span class="c-me-avatar" style="background:${m.color}">${esc(m.emoji)}</span>
+      <div class="c-me-info">
+        <b>${esc(m.name)}</b>
+        <small>المركز ${ar(m.rank)}/${ar(m.n)} · خانة ${ar(m.pos)}/${ar(m.last)}${m.streak>1?` · 🔥${ar(m.streak)}`:''}</small>
+      </div>
+      <strong class="c-me-pts">${ar(m.score)}</strong>`;
+
+    /* Compact Scoreboard Pills for All Players */
     if(m.players){
-      $('#cScore').innerHTML=m.players.map(p=>`<div class="pl${p.turn?' on':''}"><i class="dot" style="background:${p.color}"></i><div><b>${esc(p.emoji)} ${esc(p.name)}</b><small>${ar(p.score)} نقطة، خانة ${ar(p.pos)}</small></div></div>`).join('');
+      $('#cScore').innerHTML=m.players.map(p=>`<div class="pl${p.turn?' on':''}"><i class="dot" style="background:${p.color}"></i><b>${esc(p.emoji)} ${esc(p.name)}</b><small>خانة ${ar(p.pos)} · ${ar(p.score)}ن</small></div>`).join('');
     }
+
     if(m.board&&m.players){
       syncClientBoard(m.board,m.players);
     }
+
+    /* Auto-collapse arena on mobile screens when a question appears so player never needs to scroll */
+    const isMobile=window.innerWidth<820;
+    const activeQKey=m.qid||(m.turn&&m.phase==='choose'?'choose':null);
+    if(isMobile&&activeQKey&&!m.reveal){
+      if(cArenaManualForQ!==activeQKey){
+        setClientArenaHidden(true,false);
+      }
+    }else if(!activeQKey){
+      cArenaManualForQ=null;
+    }
+    /* Refresh button label with current square */
+    setClientArenaHidden(cArenaHidden,false);
+
     const fsHud=$('#clientFsHud');
     if(fsHud){
       fsHud.innerHTML=`<span><i class="dot" style="background:${m.color}"></i> <b>${esc(m.emoji)} ${esc(m.name)}</b> (خانة ${ar(m.pos)}/${ar(m.last)})</span><span>${m.turn?'🎯 دورك الآن!':`دور ${esc(m.cur)}`}</span><span>🎲 ${m.dice?ar(m.dice):'-'}</span>`;

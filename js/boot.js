@@ -12,7 +12,14 @@ if('speechSynthesis' in window){speechSynthesis.onvoiceschanged=fillVoices;fillV
 $('#voiceSel').onchange=()=>{const nm=store.profiles[0]&&store.profiles[0].name;if(nm)speakDevice(nm)};
 
 loadStore();
+initQuickThemeBar();
 initAuth();
 const J0=QS.get('j');
 if(J0&&/^\d{6}$/.test(J0))startClient(J0);
-else{show('setup');renderSetup();loadCustom();loadVoices()}
+else{
+  show('setup');
+  switchMainTab(isAuthed()?'host':'join');
+  renderSetup();
+  loadCustom();
+  loadVoices();
+}

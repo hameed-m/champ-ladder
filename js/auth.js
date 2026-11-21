@@ -139,13 +139,13 @@ async function addAdminAccount(email,password){
   store.admins.push({email:em,hash:h});
   saveStoreLocal();
 
-  let cloudNote=' (تم الحفظ في قاعدة البيانات الدائمة Supabase)';
+  let cloudNote=' (تم الحفظ تلقائيًا)';
   if(typeof sbUpsertAdmin==='function'){
     try{
       await sbUpsertAdmin(em,h,sess.email);
       await sbFetchAdmins();
     }catch(e){
-      cloudNote=' (تم الحفظ محليًا — تأكد من تشغيل supabase_schema.sql في Supabase)';
+      cloudNote=' (تم الحفظ على هذا الجهاز)';
     }
   }
   renderAdminList();

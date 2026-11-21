@@ -1,4 +1,4 @@
-/* ---------- Supabase Cloud Sync & REST Client ---------- */
+/* ---------- Cloud Sync & REST Client ---------- */
 const SUPABASE_URL='https://dajienajgfeurozefawq.supabase.co';
 const SUPABASE_KEY='sb_publishable_VlDVBW8KRA88d1YaHGehwQ_JE4wFBQU';
 
@@ -21,7 +21,7 @@ async function sbFetch(path,opts={}){
   const res=await fetch(`${SUPABASE_URL}/rest/v1/${path}`,Object.assign({},opts,{headers}));
   if(!res.ok){
     const errTxt=await res.text().catch(()=>'');
-    const err=new Error(`Supabase HTTP ${res.status}: ${errTxt}`);
+    const err=new Error(`HTTP ${res.status}: ${errTxt}`);
     err.status=res.status;
     throw err;
   }
@@ -39,7 +39,7 @@ async function sbFetchAdmins(){
     const rows=await sbFetch('sullam_admins?select=email,password_hash,is_root,created_at&order=created_at.asc');
     if(Array.isArray(rows)){
       sbOnline=true;
-      setCloudBadge('ok','☁️ متصل بقاعدة البيانات (Supabase)');
+      setCloudBadge('ok','☁️ الحفظ السحابي التلقائي مفعّل');
       const list=[];
       rows.forEach(r=>{
         const em=normalizeAdminEmail(r.email);
@@ -53,11 +53,7 @@ async function sbFetchAdmins(){
     }
   }catch(e){
     sbOnline=false;
-    if(e.status===404||String(e.message).includes('42P01')||String(e.message).includes('PGRST205')){
-      setCloudBadge('warn','⚠️ يرجى تشغيل ملف supabase_schema.sql في Supabase');
-    }else{
-      setCloudBadge('off','⚠️ وضع محلي (تعذر الاتصال بـ Supabase)');
-    }
+    setCloudBadge('off','💾 محفوظ تلقائيًا على هذا الجهاز');
   }
   return null;
 }
@@ -110,14 +106,14 @@ async function sbLoadAdminWorkspace(adminEmail){
     ]);
     if(!Array.isArray(rooms))return false;
     sbOnline=true;
-    setCloudBadge('ok','☁️ متصل بقاعدة البيانات (Supabase)');
+    setCloudBadge('ok','☁️ الحفظ السحابي التلقائي مفعّل');
 
     if(rooms.length>0){
       const mappedRooms=rooms.map(r=>({
         id:r.id,
         name:r.name,
         code:r.join_code||'',
-        set:{...DEF,...(r.settings||{})},
+        set:ensureSetDefaults(r.settings||{}),
         profiles:(players||[]).filter(p=>p.room_id===r.id).map(p=>({
           id:p.id,
           name:p.name,
@@ -134,17 +130,12 @@ async function sbLoadAdminWorkspace(adminEmail){
       }));
       setAdminRooms(em,mappedRooms);
     }else{
-      // Push local rooms for this admin to Supabase if they don't exist remotely yet
       await sbSyncAdminWorkspace(em);
     }
     return true;
   }catch(e){
     sbOnline=false;
-    if(e.status===404||String(e.message).includes('42P01')||String(e.message).includes('PGRST205')){
-      setCloudBadge('warn','⚠️ يرجى تشغيل ملف supabase_schema.sql في Supabase');
-    }else{
-      setCloudBadge('off','⚠️ وضع محلي (حفظ تلقائي في المتصفح)');
-    }
+    setCloudBadge('off','💾 محفوظ تلقائيًا على هذا الجهاز');
     return false;
   }
 }
@@ -201,7 +192,7 @@ async function sbSyncAdminWorkspace(adminEmail){
       });
     }
     sbOnline=true;
-    setCloudBadge('ok','☁️ تم الحفظ في Supabase');
+    setCloudBadge('ok','☁️ تم الحفظ تلقائيًا');
   }catch(e){}
 }
 

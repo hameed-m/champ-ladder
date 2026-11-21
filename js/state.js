@@ -21,6 +21,21 @@ const RULES=[
   ['steal','⚡ سرقة الإجابة'],
   ['penalty','⚽ ضربة جزاء']
 ];
+const THEMES=[
+  ['green','الأخضر الزمردي','#1f6b52'],
+  ['orange','البرتقالي الناري','#d95d1e'],
+  ['purple','البنفسجي الملكي','#6f3cc3'],
+  ['blue','الأزرق المحيطي','#1d68b8'],
+  ['crimson','الأحمر الياقوتي','#b82841'],
+  ['gold','الذهبي الفاخر','#b07d12']
+];
+const ARENAS=[
+  ['classic','🏟️ ملعب الأبطال','كلاسيكي بألوان حيوية وسلالم وحيات',['#e4572e','#f0a202','#2e86de','#3fae5a']],
+  ['horror','👻 القلعة المسكونة','أجواء رعب وأشباح وخفافيش وسلالم متوهجة',['#1e1333','#4c1d95','#991b1b','#c084fc']],
+  ['funny','🤡 كرتوني مرح','ألوان حلوى ووحوش مضحكة وقشور موز',['#ff595e','#ffca3a','#8ac926','#1982c4']],
+  ['space','🚀 الفضاء والمجرات','نيون مجري وصواريخ وثقوب سوداء',['#0f172a','#1e1b4b','#00f5d4','#a855f7']],
+  ['jungle','🌴 غابة المغامرات','أخشاب وسلالم حبال وأفاعي الأدغال',['#2d6a4f','#b5835a','#52b788','#d4a373']]
+];
 const CARD={shield:['🛡️','درع'],double:['🎲','نرد مضاعف'],freeze:['❄️','تجميد'],swap:['🔄','تبديل السؤال']};
 const REACT=['👏','🔥','😂','😱','⚽'];
 
@@ -34,10 +49,26 @@ const QS=new URLSearchParams(location.search),PS=QS.get('ps');
 const canNet=()=>/^https?:/.test(location.protocol);
 
 /* ---------- Store (Per-Admin Rooms & Per-Room Players) ---------- */
-const KEY='sullam-v3',LEGACY_KEY='sullam-v2';
+const KEY='sullam-v3',LEGACY_KEY='sullam-v2',THEME_KEY='sullam-theme-v1';
 const EMO=['🦁','🐯','🦅','🐬','🦊','🐼','🚀','⚽','🌟','🐎','🦉','🐢'];
 const ALLT=[1,2,3,4,5,6,7,8,9],MAXP=6;
-const DEF={size:6,level:1,topics:['mul'],tables:ALLT.slice(),fair:'each',ladders:true,snakes:true,pushback:true,allq:true,cards:true,steal:true,penalty:true,mode:'multi'};
+const DEF={
+  size:6,
+  level:1,
+  topics:['mul'],
+  tables:ALLT.slice(),
+  fair:'each',
+  ladders:true,
+  snakes:true,
+  pushback:true,
+  allq:true,
+  cards:true,
+  steal:true,
+  penalty:true,
+  mode:'multi',
+  theme:'green',
+  arena:'classic'
+};
 
 const uid=()=>Math.random().toString(36).slice(2,10);
 const genCode=()=>String(rnd(100000,999999));
@@ -50,12 +81,74 @@ let store={
   set:{...DEF}
 };
 
+let themePref={
+  color:'green',
+  dark:window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches,
+  userPicked:false
+};
+
+function loadThemePref(){
+  try{
+    const saved=JSON.parse(localStorage.getItem(THEME_KEY));
+    if(saved&&typeof saved==='object'){
+      if(THEMES.some(t=>t[0]===saved.color))themePref.color=saved.color;
+      if(typeof saved.dark==='boolean')themePref.dark=saved.dark;
+      if(typeof saved.userPicked==='boolean')themePref.userPicked=saved.userPicked;
+    }
+  }catch(e){}
+  applyThemeDOM();
+}
+
+function saveThemePref(){
+  try{localStorage.setItem(THEME_KEY,JSON.stringify(themePref))}catch(e){}
+}
+
+function applyThemeDOM(){
+  const root=document.documentElement;
+  root.setAttribute('data-color',themePref.color||'green');
+  root.setAttribute('data-theme',themePref.dark?'dark':'light');
+  const dt=$('#darkToggle');
+  if(dt){
+    dt.textContent=themePref.dark?'☀️':'🌙';
+    dt.setAttribute('aria-pressed',!!themePref.dark);
+  }
+  document.querySelectorAll('[data-qtheme]').forEach(b=>{
+    b.setAttribute('aria-pressed',b.dataset.qtheme===themePref.color);
+  });
+}
+
+function setAppTheme(color,fromUser){
+  if(!THEMES.some(t=>t[0]===color))return;
+  themePref.color=color;
+  if(fromUser)themePref.userPicked=true;
+  saveThemePref();
+  applyThemeDOM();
+}
+
+function toggleDarkMode(){
+  themePref.dark=!themePref.dark;
+  saveThemePref();
+  applyThemeDOM();
+}
+
+function ensureSetDefaults(setObj){
+  if(!setObj||typeof setObj!=='object')return{...DEF,topics:DEF.topics.slice(),tables:DEF.tables.slice()};
+  for(const k in DEF){
+    if(setObj[k]===undefined){
+      setObj[k]=Array.isArray(DEF[k])?DEF[k].slice():DEF[k];
+    }
+  }
+  if(!THEMES.some(t=>t[0]===setObj.theme))setObj.theme='green';
+  if(!ARENAS.some(a=>a[0]===setObj.arena))setObj.arena='classic';
+  return setObj;
+}
+
 function makeDefaultRoom(name){
   return{
     id:'rm_'+uid(),
     name:name||'الغرفة الرئيسية',
     code:genCode(),
-    set:{...DEF},
+    set:ensureSetDefaults({}),
     profiles:[]
   };
 }
@@ -82,10 +175,10 @@ function curRoom(){
     ws.rooms=[rm];
     ws.activeRoomId=rm.id;
   }
-  rm.set={...DEF,...(rm.set||{})};
+  /* Mutate in-place or initialize once so S() always returns the stable object reference */
+  rm.set=ensureSetDefaults(rm.set);
   rm.profiles=Array.isArray(rm.profiles)?rm.profiles:[];
   if(!rm.code||!/^\d{6}$/.test(rm.code))rm.code=genCode();
-  // Bind active room references for direct access
   store.profiles=rm.profiles;
   store.set=rm.set;
   return rm;
@@ -95,6 +188,7 @@ function setAdminRooms(email,rooms){
   const em=String(email||store.activeAdmin).trim().toLowerCase();
   const ws=getAdminWorkspace(em);
   if(Array.isArray(rooms)&&rooms.length){
+    rooms.forEach(r=>{r.set=ensureSetDefaults(r.set)});
     ws.rooms=rooms;
     if(!ws.rooms.some(r=>r.id===ws.activeRoomId)){
       ws.activeRoomId=ws.rooms[0].id;
@@ -128,6 +222,7 @@ function selectRoom(roomId){
   if(!rm)return;
   ws.activeRoomId=rm.id;
   curRoom();
+  if(!themePref.userPicked&&rm.set.theme)setAppTheme(rm.set.theme,false);
   saveStoreLocal();
 }
 
@@ -155,21 +250,22 @@ function deleteCurrentRoom(){
 }
 
 function loadStore(){
+  loadThemePref();
   try{
     const r=JSON.parse(localStorage.getItem(KEY));
     if(r&&r.workspaces){
       store.admins=Array.isArray(r.admins)?r.admins:[];
       store.workspaces=r.workspaces;
       store.activeAdmin=r.activeAdmin||'a.alhofufy@gmail.com';
-      curRoom();
+      const rm=curRoom();
+      if(!themePref.userPicked&&rm.set.theme)setAppTheme(rm.set.theme,false);
       return;
     }
-    // Migrate from sullam-v2 if present
     const old=JSON.parse(localStorage.getItem(LEGACY_KEY));
     if(old){
       store.admins=Array.isArray(old.admins)?old.admins:[];
       const rm=makeDefaultRoom('الغرفة الرئيسية');
-      rm.set={...DEF,...(old.set||{})};
+      rm.set=ensureSetDefaults(old.set||{});
       rm.profiles=Array.isArray(old.profiles)?old.profiles:[];
       store.workspaces={'a.alhofufy@gmail.com':{rooms:[rm],activeRoomId:rm.id}};
       curRoom();

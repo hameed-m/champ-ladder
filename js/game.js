@@ -13,6 +13,7 @@ function startGame(){
   if(!isAuthed()){show('setup');renderAuthUI();return}
   epoch++;paused=false;
   const s=S();N=s.size;LAST=N*N;
+  if(s.theme&&!themePref.userPicked)setAppTheme(s.theme,false);
   P=seats.map((st,i)=>{const pr=prof(st.pid);return{i,pid:pr.id,token:st.token,name:pr.name,named:true,emoji:pr.emoji,color:COLORS[i],pos:1,score:0,correct:0,wrong:0,streak:0,wrun:0,adj:0,cards:[],recent:[],frozen:false,dbl:false,buzz:null}});
   cur=0;won=false;G={phase:'busy',msg:''};$('#cap').textContent='';
   genBoard();show('game');
@@ -56,6 +57,7 @@ function viewFor(i){
     dice:G.dice||0,
     canFwd,
     targets,
+    theme:S().theme||'green',
     board:getBoardData(),
     players:P.map(x=>({i:x.i,name:x.name,emoji:x.emoji,color:x.color,pos:x.pos,score:x.score,turn:x.i===cur})),
     msg:(i===cur||G.phase==='race'||G.phase==='end'||G.phase==='choose')?G.msg||'':'',
@@ -148,7 +150,6 @@ async function onRoll(){
   const over=G.dice>rem;
   const targets=getPushTargets(cur);
 
-  // If pushback rule is enabled and there is at least one opponent above square 1, let player choose!
   if(S().pushback&&targets.length>0){
     G.phase='choose';
     if(over){
@@ -161,7 +162,6 @@ async function onRoll(){
     return;
   }
 
-  // Otherwise auto-execute forward move (or fail if exceeds remaining steps)
   await executeForwardMove(p,G.dice,ep);
 }
 
@@ -207,11 +207,7 @@ function act(i,m){
   if(m.t==='ask'&&G.phase==='ready'&&i===cur)return ask();
   if(m.t==='roll'&&G.phase==='roll'&&i===cur)return onRoll();
   if(m.t==='move'&&G.phase==='choose'&&i===cur){
-    if(m.dir==='fwd'){
-      if(P[cur].pos+G.dice>LAST)return executeForwardMove(P[cur],G.dice,epoch);
-      return executeForwardMove(P[cur],G.dice,epoch);
-    }
-    if(m.dir==='skip'){
+    if(m.dir==='fwd'||m.dir==='skip'){
       return executeForwardMove(P[cur],G.dice,epoch);
     }
     if(m.dir==='back'){
