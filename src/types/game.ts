@@ -2,6 +2,7 @@ export type ThemeColorId = 'green' | 'orange' | 'purple' | 'blue' | 'crimson' | 
 export interface ThemeConfig {
   hue: number;
   vivid: number;
+  mono?: boolean;
 }
 export type ArenaId = 'classic' | 'horror' | 'funny' | 'space' | 'jungle';
 export type TopicId = 'mul' | 'div' | 'add' | 'sub' | 'sqrt' | 'geo';

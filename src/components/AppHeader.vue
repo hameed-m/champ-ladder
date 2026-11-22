@@ -11,7 +11,9 @@ const ws = useWorkspaceStore();
 const pickerOpen = ref(false);
 const popoverRef = ref<HTMLElement | null>(null);
 
-const currentDotColor = computed(() => oklchPreviewColor(theme.hue, theme.vivid, theme.dark));
+const currentDotColor = computed(() =>
+  oklchPreviewColor(theme.hue, theme.vivid, theme.dark, theme.mono),
+);
 const isHostSetup = computed(() => ws.isAuthed && (ws.view === 'setup' || ws.view === 'lobby'));
 
 function onDocClick(e: MouseEvent) {

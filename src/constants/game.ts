@@ -65,6 +65,7 @@ export interface ThemePreset {
   label: string;
   hue: number;
   vivid: number;
+  mono?: boolean;
 }
 
 export const THEME_PRESETS: ReadonlyArray<ThemePreset> = [
@@ -78,22 +79,23 @@ export const THEME_PRESETS: ReadonlyArray<ThemePreset> = [
   { id: 'orange', label: 'البرتقالي الناري', hue: 46, vivid: 92 },
   { id: 'gold', label: 'الذهبي الفاخر', hue: 82, vivid: 85 },
   { id: 'lime', label: 'الليموني الحيوي', hue: 128, vivid: 82 },
-  { id: 'copper', label: 'النحاسي الدافئ', hue: 56, vivid: 42 },
   { id: 'slate', label: 'الرمادي الأنيق', hue: 235, vivid: 14 },
+  { id: 'black', label: 'الأسود الفاخر', hue: 0, vivid: 0, mono: true },
 ];
 
-export const DEFAULT_THEME_CONFIG: ThemeConfig = { hue: 162, vivid: 75 };
+export const DEFAULT_THEME_CONFIG: ThemeConfig = { hue: 162, vivid: 75, mono: false };
 
 export function normalizeThemeConfig(cfg?: Partial<ThemeConfig> | null, legacyId?: string): ThemeConfig {
   if (cfg && typeof cfg.hue === 'number' && !Number.isNaN(cfg.hue)) {
     return {
       hue: ((Math.round(cfg.hue) % 360) + 360) % 360,
       vivid: Math.max(0, Math.min(100, Math.round(typeof cfg.vivid === 'number' ? cfg.vivid : 75))),
+      mono: !!cfg.mono,
     };
   }
   if (legacyId) {
     const preset = THEME_PRESETS.find((p) => p.id === legacyId);
-    if (preset) return { hue: preset.hue, vivid: preset.vivid };
+    if (preset) return { hue: preset.hue, vivid: preset.vivid, mono: !!preset.mono };
   }
   return { ...DEFAULT_THEME_CONFIG };
 }

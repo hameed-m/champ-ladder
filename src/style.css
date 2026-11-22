@@ -56,3 +56,28 @@
   --theme-accent-ink: oklch(0.17 calc(0.030 * var(--theme-vivid)) var(--theme-hue));
   --theme-accent-soft: oklch(0.76 calc(0.155 * var(--theme-vivid)) var(--theme-hue) / 0.18);
 }
+
+/* Pure Monochrome Black Preset (Light & True OLED Dark) */
+:root[data-mono="black"] {
+  --theme-bg: #f4f4f5;
+  --theme-bg-soft: #e4e4e7;
+  --theme-ink: #09090b;
+  --theme-card: #ffffff;
+  --theme-line: #d4d4d8;
+  --theme-accent: #111113;
+  --theme-accent-hover: #27272a;
+  --theme-accent-ink: #ffffff;
+  --theme-accent-soft: rgba(17, 17, 19, 0.1);
+}
+
+:root[data-mono="black"][data-theme="dark"] {
+  --theme-bg: #050506;
+  --theme-bg-soft: #101012;
+  --theme-ink: #fafafa;
+  --theme-card: #121215;
+  --theme-line: #27272a;
+  --theme-accent: #f4f4f5;
+  --theme-accent-hover: #ffffff;
+  --theme-accent-ink: #09090b;
+  --theme-accent-soft: rgba(244, 244, 245, 0.14);
+}

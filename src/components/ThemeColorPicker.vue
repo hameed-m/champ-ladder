@@ -28,35 +28,39 @@ const vividTrack = computed(() => {
   return `linear-gradient(to right, ${from}, ${to})`;
 });
 
-const activeSwatchColor = computed(() => oklchPreviewColor(theme.hue, theme.vivid, theme.dark));
+const activeSwatchColor = computed(() =>
+  oklchPreviewColor(theme.hue, theme.vivid, theme.dark, theme.mono),
+);
 
 const matchedPreset = computed(() =>
-  THEME_PRESETS.find(
-    (p) => Math.abs(p.hue - theme.hue) <= 3 && Math.abs(p.vivid - theme.vivid) <= 4,
+  THEME_PRESETS.find((p) =>
+    p.mono
+      ? theme.mono
+      : !theme.mono && Math.abs(p.hue - theme.hue) <= 3 && Math.abs(p.vivid - theme.vivid) <= 4,
   ),
 );
 
-function applyChange(hue: number, vivid: number) {
-  theme.setConfig({ hue, vivid }, !props.syncToRoom);
+function applyChange(hue: number, vivid: number, mono = false) {
+  theme.setConfig({ hue, vivid, mono }, !props.syncToRoom);
   if (props.syncToRoom && ws.isAuthed) {
-    ws.currentSettings.themeConfig = { hue: theme.hue, vivid: theme.vivid };
-    theme.roomDefault = { hue: theme.hue, vivid: theme.vivid };
+    ws.currentSettings.themeConfig = { hue: theme.hue, vivid: theme.vivid, mono: theme.mono };
+    theme.roomDefault = { hue: theme.hue, vivid: theme.vivid, mono: theme.mono };
     ws.save();
   }
 }
 
 function onHueInput(e: Event) {
   const val = Number((e.target as HTMLInputElement).value);
-  applyChange(val, theme.vivid);
+  applyChange(val, theme.mono ? 75 : theme.vivid, false);
 }
 
 function onVividInput(e: Event) {
   const val = Number((e.target as HTMLInputElement).value);
-  applyChange(theme.hue, val);
+  applyChange(theme.hue, val, false);
 }
 
-function pickPreset(hue: number, vivid: number) {
-  applyChange(hue, vivid);
+function pickPreset(hue: number, vivid: number, mono = false) {
+  applyChange(hue, vivid, mono);
 }
 
 function handleRandom() {
@@ -176,11 +180,12 @@ function handleRandom() {
               ? 'border-accent bg-accent-soft'
               : 'border-line bg-card hover:border-accent'
           "
-          @click="pickPreset(p.hue, p.vivid)"
+          @click="pickPreset(p.hue, p.vivid, !!p.mono)"
         >
           <span
-            class="h-6 w-6 rounded-full border-2 border-white/70 shadow-xs"
-            :style="{ backgroundColor: oklchPreviewColor(p.hue, p.vivid, theme.dark) }"
+            class="h-6 w-6 rounded-full border-2 shadow-xs"
+            :class="p.mono ? 'border-zinc-400' : 'border-white/70'"
+            :style="{ backgroundColor: oklchPreviewColor(p.hue, p.vivid, theme.dark, !!p.mono) }"
           />
           <span v-if="!compact" class="truncate text-[11px] font-bold text-ink">
             {{ p.label.split(' ')[0] }}

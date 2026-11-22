@@ -16,7 +16,8 @@ export function vividToFactor(vivid: number): number {
   return Number((0.15 + (clamped / 100) * 1.0).toFixed(3));
 }
 
-export function oklchPreviewColor(hue: number, vivid: number, isDark = false): string {
+export function oklchPreviewColor(hue: number, vivid: number, isDark = false, mono = false): string {
+  if (mono) return '#111113';
   const f = vividToFactor(vivid);
   return isDark
     ? `oklch(0.76 ${(0.155 * f).toFixed(4)} ${hue})`
@@ -26,6 +27,7 @@ export function oklchPreviewColor(hue: number, vivid: number, isDark = false): s
 export const useThemeStore = defineStore('theme', () => {
   const hue = ref<number>(DEFAULT_THEME_CONFIG.hue);
   const vivid = ref<number>(DEFAULT_THEME_CONFIG.vivid);
+  const mono = ref<boolean>(false);
   const dark = ref<boolean>(
     typeof window !== 'undefined' &&
       window.matchMedia &&
@@ -37,11 +39,15 @@ export const useThemeStore = defineStore('theme', () => {
   const canInstall = ref<boolean>(false);
   let deferredPrompt: BeforeInstallPromptEvent | null = null;
 
-  const config = computed<ThemeConfig>(() => ({ hue: hue.value, vivid: vivid.value }));
+  const config = computed<ThemeConfig>(() => ({ hue: hue.value, vivid: vivid.value, mono: mono.value }));
 
   const hasCustomOverride = computed<boolean>(() => {
     if (!userPicked.value || !roomDefault.value) return false;
-    return roomDefault.value.hue !== hue.value || roomDefault.value.vivid !== vivid.value;
+    return (
+      roomDefault.value.hue !== hue.value ||
+      roomDefault.value.vivid !== vivid.value ||
+      !!roomDefault.value.mono !== mono.value
+    );
   });
 
   function applyDOM(): void {
@@ -49,10 +55,18 @@ export const useThemeStore = defineStore('theme', () => {
     root.style.setProperty('--theme-hue', String(hue.value));
     root.style.setProperty('--theme-vivid', String(vividToFactor(vivid.value)));
     root.setAttribute('data-theme', dark.value ? 'dark' : 'light');
+    if (mono.value) {
+      root.setAttribute('data-mono', 'black');
+    } else {
+      root.removeAttribute('data-mono');
+    }
 
     const meta = document.querySelector('meta[name="theme-color"]');
     if (meta) {
-      meta.setAttribute('content', dark.value ? '#11181c' : oklchPreviewColor(hue.value, vivid.value, false));
+      meta.setAttribute(
+        'content',
+        mono.value ? '#09090b' : dark.value ? '#11181c' : oklchPreviewColor(hue.value, vivid.value, false),
+      );
     }
   }
 
@@ -63,6 +77,7 @@ export const useThemeStore = defineStore('theme', () => {
         JSON.stringify({
           hue: hue.value,
           vivid: vivid.value,
+          mono: mono.value,
           dark: dark.value,
           userPicked: userPicked.value,
         }),
@@ -79,6 +94,7 @@ export const useThemeStore = defineStore('theme', () => {
         const norm = normalizeThemeConfig(saved);
         hue.value = norm.hue;
         vivid.value = norm.vivid;
+        mono.value = !!norm.mono;
         if (typeof saved.dark === 'boolean') dark.value = saved.dark;
         if (typeof saved.userPicked === 'boolean') userPicked.value = saved.userPicked;
       } else {
@@ -87,6 +103,7 @@ export const useThemeStore = defineStore('theme', () => {
           const norm = normalizeThemeConfig(null, legacy.color);
           hue.value = norm.hue;
           vivid.value = norm.vivid;
+          mono.value = !!norm.mono;
           if (typeof legacy.dark === 'boolean') dark.value = legacy.dark;
           if (typeof legacy.userPicked === 'boolean') userPicked.value = legacy.userPicked;
         }
@@ -111,9 +128,11 @@ export const useThemeStore = defineStore('theme', () => {
     const norm = normalizeThemeConfig({
       hue: next.hue ?? hue.value,
       vivid: next.vivid ?? vivid.value,
+      mono: next.mono ?? false,
     });
     hue.value = norm.hue;
     vivid.value = norm.vivid;
+    mono.value = !!norm.mono;
     if (fromUser) userPicked.value = true;
     persist();
     applyDOM();
@@ -125,6 +144,7 @@ export const useThemeStore = defineStore('theme', () => {
     if (!userPicked.value) {
       hue.value = norm.hue;
       vivid.value = norm.vivid;
+      mono.value = !!norm.mono;
       applyDOM();
     }
   }
@@ -134,18 +154,21 @@ export const useThemeStore = defineStore('theme', () => {
     if (roomDefault.value) {
       hue.value = roomDefault.value.hue;
       vivid.value = roomDefault.value.vivid;
+      mono.value = !!roomDefault.value.mono;
     } else {
       hue.value = DEFAULT_THEME_CONFIG.hue;
       vivid.value = DEFAULT_THEME_CONFIG.vivid;
+      mono.value = false;
     }
     persist();
     applyDOM();
   }
 
   function randomize(fromUser = true): ThemeConfig {
-    const next = {
+    const next: ThemeConfig = {
       hue: Math.floor(Math.random() * 360),
       vivid: 65 + Math.floor(Math.random() * 30),
+      mono: false,
     };
     setConfig(next, fromUser);
     return next;
@@ -168,6 +191,7 @@ export const useThemeStore = defineStore('theme', () => {
   return {
     hue,
     vivid,
+    mono,
     dark,
     userPicked,
     roomDefault,
