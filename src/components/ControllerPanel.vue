@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onUnmounted, ref, watch } from 'vue';
+import PlayerAvatar from '@/components/PlayerAvatar.vue';
 import { CARD, REACT } from '@/constants/game';
 import type { CardType, ClientActionMessage, ClientViewMessage } from '@/types/game';
 import { ar } from '@/utils/format';
@@ -105,7 +106,7 @@ const isArabicText = (s: string) => /[ء-ي]/.test(s);
       <b class="flex items-center gap-2 text-lg font-extrabold sm:text-xl">
         <template v-if="view.phase === 'end'">🏆 {{ view.won }} فاز</template>
         <template v-else-if="view.turn">
-          <i class="inline-block h-3.5 w-3.5 shrink-0 rounded-full" :style="{ backgroundColor: view.color }" />
+          <PlayerAvatar :avatar="view.emoji" size="sm" :ring-color="view.color" />
           دورك يا {{ view.name }}
         </template>
         <template v-else> دور {{ view.cur }} </template>
@@ -193,8 +194,10 @@ const isArabicText = (s: string) => /[ء-ي]/.test(s);
           class="flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border-2 border-line bg-bg px-3 text-base font-extrabold text-ink transition hover:border-accent hover:bg-accent-soft"
           @click="emit('action', { t: 'move', dir: 'back', target: tg.i })"
         >
-          <i class="inline-block h-3.5 w-3.5 rounded-full" :style="{ backgroundColor: tg.color }" />
-          إرجاع {{ tg.emoji }} {{ tg.name }} (−{{ ar(view.dice) }} من خانة {{ ar(tg.pos) }})
+          <PlayerAvatar :avatar="tg.emoji" size="xs" :ring-color="tg.color" />
+          <span>
+            إرجاع {{ tg.name }} (−{{ ar(view.dice) }} من خانة {{ ar(tg.pos) }}){{ tg.shielded ? ' 🛡️' : '' }}
+          </span>
         </button>
       </div>
     </div>

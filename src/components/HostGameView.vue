@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import ArenaBoard from '@/components/ArenaBoard.vue';
+import AvatarPickerModal from '@/components/AvatarPickerModal.vue';
 import ControllerPanel from '@/components/ControllerPanel.vue';
+import PlayerAvatar from '@/components/PlayerAvatar.vue';
+import { avatarDisplayText } from '@/constants/avatars';
 import { APP_TITLE_AR, ARENAS, CARD } from '@/constants/game';
 import { captionText, crowdOn, muted, setCrowdOn, setMuted } from '@/services/audio';
 import { useGameStore } from '@/stores/game';
@@ -10,6 +13,17 @@ import { ar } from '@/utils/format';
 
 const game = useGameStore();
 const ws = useWorkspaceStore();
+const avatarEditIdx = ref<number | null>(null);
+
+const editingPlayer = computed(() =>
+  avatarEditIdx.value !== null ? game.players[avatarEditIdx.value] || null : null,
+);
+
+function onSelectAvatar(avatarId: string) {
+  if (avatarEditIdx.value !== null) {
+    game.changePlayerAvatar(avatarEditIdx.value, avatarId);
+  }
+}
 
 const arenaTitle = computed(
   () => (ARENAS.find((a) => a[0] === game.board.arena) || ARENAS[0]!)[1],
@@ -53,7 +67,7 @@ const hostMessage = computed(() => {
 
 const fsHudLeft = computed(() => {
   const p = game.currentPlayer;
-  return p ? `دور ${p.emoji} ${p.name} (خانة ${ar(p.pos)}/${ar(game.lastSquare)})` : '';
+  return p ? `دور ${avatarDisplayText(p.emoji)} ${p.name} (خانة ${ar(p.pos)}/${ar(game.lastSquare)})` : '';
 });
 
 const fsHudCenter = computed(() => {
@@ -132,9 +146,16 @@ const fsHudCenter = computed(() => {
           p.off ? 'border-dashed opacity-55' : '',
         ]"
       >
-        <i class="inline-block h-3.5 w-3.5 shrink-0 rounded-full" :style="{ backgroundColor: p.color }" />
+        <button
+          type="button"
+          :title="`تغيير أفاتار ${p.name}`"
+          class="shrink-0 cursor-pointer rounded-full transition hover:scale-105"
+          @click="avatarEditIdx = p.i"
+        >
+          <PlayerAvatar :avatar="p.emoji" size="sm" :ring-color="p.color" />
+        </button>
         <div class="min-w-0">
-          <b class="block truncate text-sm font-extrabold">{{ p.emoji }} {{ p.name }}</b>
+          <b class="block truncate text-sm font-extrabold">{{ p.name }}</b>
           <small class="block text-xs text-ink/75">
             {{ p.off ? 'منقطع، ' : '' }}{{ ar(p.score) }} نقطة، خانة {{ ar(p.pos) }}
             <span v-if="p.cards?.length">
@@ -152,6 +173,7 @@ const fsHudCenter = computed(() => {
         :board="game.board"
         :players="game.boardPlayers"
         :fx="game.floatingFx"
+        :effect="game.boardEffect"
         :show-quick-arena="true"
         :fs-hud-left="fsHudLeft"
         :fs-hud-center="fsHudCenter"
@@ -165,11 +187,8 @@ const fsHudCenter = computed(() => {
         <div v-if="game.mode === 'online'">
           <div class="flex items-center justify-between gap-2.5">
             <b v-if="game.currentPlayer" class="flex items-center gap-2 text-xl font-extrabold">
-              <i
-                class="inline-block h-3.5 w-3.5 shrink-0 rounded-full"
-                :style="{ backgroundColor: game.currentPlayer.color }"
-              />
-              دور {{ game.currentPlayer.emoji }} {{ game.currentPlayer.name }}
+              <PlayerAvatar :avatar="game.currentPlayer.emoji" size="sm" :ring-color="game.currentPlayer.color" />
+              دور {{ game.currentPlayer.name }}
             </b>
             <div
               class="grid h-14 w-14 shrink-0 place-items-center rounded-2xl border-[3px] border-accent bg-bg font-display text-3xl text-ink"
@@ -210,7 +229,7 @@ const fsHudCenter = computed(() => {
               game.raceState.ids
                 .map(
                   (id) =>
-                    `${game.players[id]?.emoji || ''} ${game.players[id]?.name || ''}${
+                    `${avatarDisplayText(game.players[id]?.emoji)} ${game.players[id]?.name || ''}${
                       game.raceState?.out.includes(id) ? ' ✕' : ''
                     }`,
                 )
@@ -295,5 +314,13 @@ const fsHudCenter = computed(() => {
         </div>
       </div>
     </div>
+
+    <AvatarPickerModal
+      :open="avatarEditIdx !== null"
+      :current="editingPlayer?.emoji || '🦁'"
+      :title="editingPlayer ? `اختر أفاتار ${editingPlayer.name}` : 'اختر الأفاتار'"
+      @close="avatarEditIdx = null"
+      @select="onSelectAvatar"
+    />
   </section>
 </template>

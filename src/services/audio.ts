@@ -1,4 +1,5 @@
 import { ref } from 'vue';
+import type { SfxName } from '@/types/game';
 import { pickOne } from '@/utils/format';
 
 let AC: AudioContext | null = null;
@@ -257,6 +258,8 @@ function clipFor(ev: string): string | null {
     lastPick[ev] = k;
     return k;
   }
+  if (ev === 'shield_push') return clipFor('shield');
+  if (ev === 'pushback') return null;
   return ev + '_0';
 }
 
@@ -427,19 +430,127 @@ export function whistle(): void {
   }
 }
 
+function playMusicalNote(
+  freq: number,
+  dur: number,
+  opts: {
+    type?: OscillatorType;
+    vol?: number;
+    delay?: number;
+    endFreq?: number;
+    filterHz?: number;
+    attack?: number;
+  } = {},
+): void {
+  try {
+    if (muted.value) return;
+    ensureAC();
+    if (!AC || !master) return;
+    const now = AC.currentTime + (opts.delay || 0);
+    const osc = AC.createOscillator();
+    const gain = AC.createGain();
+    osc.type = opts.type || 'triangle';
+    osc.frequency.setValueAtTime(freq, now);
+    if (opts.endFreq) {
+      osc.frequency.exponentialRampToValueAtTime(opts.endFreq, now + dur);
+    }
+
+    const peak = opts.vol ?? 0.14;
+    const atk = Math.min(opts.attack ?? 0.018, dur * 0.35);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.linearRampToValueAtTime(peak, now + atk);
+    gain.gain.exponentialRampToValueAtTime(0.0008, now + dur);
+
+    if (opts.filterHz) {
+      const flt = AC.createBiquadFilter();
+      flt.type = 'lowpass';
+      flt.frequency.setValueAtTime(opts.filterHz, now);
+      osc.connect(flt);
+      flt.connect(gain);
+    } else {
+      osc.connect(gain);
+    }
+    gain.connect(master);
+    osc.start(now);
+    osc.stop(now + dur + 0.02);
+  } catch {
+    // Ignore
+  }
+}
+
+const FWD_SCALE = [523.25, 587.33, 659.25, 783.99, 880.0, 1046.5, 1174.66, 1318.51];
+const BACK_SCALE = [440.0, 415.3, 392.0, 349.23, 329.63, 293.66, 261.63, 220.0];
+
 export const SFX = {
   tick: () => snd(500 + Math.random() * 300, 0.05, 'square', 0.05),
   step: () => snd(660, 0.08, 'triangle', 0.09),
+  moveFwdStep: (stepIdx = 0) => {
+    const f = FWD_SCALE[Math.min(stepIdx, FWD_SCALE.length - 1)]!;
+    // Warm uplifting melodic note + bass octave + subtle sparkle fifth
+    playMusicalNote(f, 0.24, { type: 'triangle', vol: 0.14 });
+    playMusicalNote(f * 0.5, 0.22, { type: 'sine', vol: 0.08 });
+    playMusicalNote(f * 1.5, 0.14, { type: 'sine', vol: 0.045, delay: 0.03 });
+  },
+  moveFwdFinish: () => {
+    // Celebratory bright stadium major arpeggio flourish
+    const notes = [523.25, 659.25, 783.99, 1046.5];
+    notes.forEach((f, idx) => {
+      playMusicalNote(f, 0.34, { type: 'triangle', vol: 0.11, delay: idx * 0.055 });
+      playMusicalNote(f * 0.5, 0.36, { type: 'sine', vol: 0.055, delay: idx * 0.055 });
+    });
+  },
+  moveBackStep: (stepIdx = 0) => {
+    const f = BACK_SCALE[Math.min(stepIdx, BACK_SCALE.length - 1)]!;
+    // Dramatic descending minor tension riff
+    playMusicalNote(f, 0.27, { type: 'sawtooth', vol: 0.085, filterHz: 1100, endFreq: f * 0.96 });
+    playMusicalNote(f * 0.5, 0.29, { type: 'triangle', vol: 0.1, endFreq: f * 0.48 });
+  },
+  moveBackFinish: () => {
+    // Low dramatic minor sting
+    [293.66, 349.23, 440.0].forEach((f) =>
+      playMusicalNote(f, 0.22, { type: 'sawtooth', vol: 0.055, filterHz: 900 }),
+    );
+    [261.63, 311.13, 392.0].forEach((f) =>
+      playMusicalNote(f, 0.42, { type: 'triangle', vol: 0.08, delay: 0.14, endFreq: f * 0.97 }),
+    );
+  },
+  shieldBlock: () => {
+    // Shimmering crystalline shield deflection fanfare
+    const chime = [659.25, 987.77, 1318.51, 1661.22, 1975.53];
+    chime.forEach((f, idx) => {
+      playMusicalNote(f, 0.42, { type: 'sine', vol: 0.11, delay: idx * 0.045, attack: 0.008 });
+      playMusicalNote(f * 0.5, 0.36, { type: 'triangle', vol: 0.06, delay: idx * 0.045 });
+    });
+  },
   ok: () => {
     snd(660, 0.15, 'sine', 0.14);
     snd(880, 0.25, 'sine', 0.14, 0.12);
   },
   bad: () => snd(220, 0.35, 'sawtooth', 0.09, 0, 110),
-  up: () => [523, 659, 784, 1047].forEach((f, i) => snd(f, 0.15, 'triangle', 0.13, i * 0.1)),
-  down: () => snd(700, 0.7, 'sawtooth', 0.08, 0, 120),
+  up: () => {
+    [523.25, 659.25, 783.99, 987.77, 1046.5, 1318.51].forEach((f, i) => {
+      playMusicalNote(f, 0.28, { type: 'triangle', vol: 0.12, delay: i * 0.07 });
+      playMusicalNote(f * 0.5, 0.24, { type: 'sine', vol: 0.055, delay: i * 0.07 });
+    });
+  },
+  down: () => {
+    [622.25, 554.37, 466.16, 392.0, 311.13, 233.08].forEach((f, i) => {
+      playMusicalNote(f, 0.24, { type: 'sawtooth', vol: 0.07, filterHz: 1050, delay: i * 0.085, endFreq: f * 0.92 });
+    });
+  },
   win: () => [523, 659, 784, 659, 784, 1047].forEach((f, i) => snd(f, 0.22, 'square', 0.06, i * 0.15)),
   warn: () => snd(900, 0.08, 'square', 0.07),
 };
+
+export function playSfxByName(name: SfxName, stepIdx?: number): void {
+  if (name === 'moveFwdStep') {
+    SFX.moveFwdStep(stepIdx ?? 0);
+  } else if (name === 'moveBackStep') {
+    SFX.moveBackStep(stepIdx ?? 0);
+  } else {
+    SFX[name]();
+  }
+}
 
 /* Custom Recordings in IndexedDB */
 let dbP: Promise<IDBDatabase> | null = null;

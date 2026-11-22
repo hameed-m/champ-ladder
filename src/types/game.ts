@@ -142,6 +142,19 @@ export interface PushTarget {
   emoji: string;
   pos: number;
   color: string;
+  shielded?: boolean;
+}
+
+export type MoveEffectKind = 'fwd' | 'back' | 'ladder' | 'snake' | 'shield-block';
+
+export interface BoardEffect {
+  id: number;
+  playerIndex: number;
+  kind: MoveEffectKind;
+  fromPos: number;
+  toPos: number;
+  stepIndex?: number;
+  totalSteps?: number;
 }
 
 export interface ClientViewMessage {
@@ -169,6 +182,7 @@ export interface ClientViewMessage {
   themeConfig?: ThemeConfig;
   board: BoardData;
   players: BoardPlayerView[];
+  boardEffect?: BoardEffect | null;
   msg: string;
   title: string;
   left: number;
@@ -188,10 +202,27 @@ export interface ClientViewMessage {
   reveal?: { ans: string; pick: number } | null;
 }
 
+export type SfxName =
+  | 'tick'
+  | 'step'
+  | 'moveFwdStep'
+  | 'moveFwdFinish'
+  | 'moveBackStep'
+  | 'moveBackFinish'
+  | 'shieldBlock'
+  | 'ok'
+  | 'bad'
+  | 'up'
+  | 'down'
+  | 'win'
+  | 'warn';
+
 export interface ClientAudioPacket {
   t: 'audio';
   kind: 'sfx' | 'whistle' | 'comment';
-  sfx?: 'tick' | 'step' | 'ok' | 'bad' | 'up' | 'down' | 'win' | 'warn';
+  sfx?: SfxName;
+  stepIdx?: number;
+  totalSteps?: number;
   parts?: Array<string | { i: number; name: string; named?: boolean }>;
 }
 
@@ -203,13 +234,14 @@ export interface FloatingFx {
 }
 
 export interface ClientActionMessage {
-  t: 'ask' | 'roll' | 'move' | 'answer' | 'card' | 'react';
+  t: 'ask' | 'roll' | 'move' | 'answer' | 'card' | 'react' | 'avatar';
   dir?: 'fwd' | 'back' | 'skip';
   target?: number;
   i?: number;
   id?: number;
   c?: CardType;
   e?: string;
+  avatar?: string;
 }
 
 export interface MatchRankingItem {

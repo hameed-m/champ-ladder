@@ -5,7 +5,7 @@ import {
   comment,
   ensureAC,
   loadVoicesManifest,
-  SFX,
+  playSfxByName,
   stopComment,
   whistle,
 } from '@/services/audio';
@@ -65,6 +65,7 @@ export const useClientStore = defineStore('client', () => {
 
   const pickList = ref<PickOption[]>([]);
   const waitName = ref('');
+  const waitAvatar = ref('🦁');
   const viewData = ref<ClientViewMessage | null>(null);
   const floatingFx = ref<FloatingFx[]>([]);
 
@@ -243,8 +244,8 @@ export const useClientStore = defineStore('client', () => {
 
   function handleAudioPacket(pkt: ClientAudioPacket): void {
     if (localMuted.value || viewData.value?.clientAudio === false) return;
-    if (pkt.kind === 'sfx' && pkt.sfx && SFX[pkt.sfx]) {
-      SFX[pkt.sfx]();
+    if (pkt.kind === 'sfx' && pkt.sfx) {
+      playSfxByName(pkt.sfx, pkt.stepIdx);
     } else if (pkt.kind === 'whistle') {
       whistle();
     } else if (pkt.kind === 'comment' && Array.isArray(pkt.parts)) {
@@ -272,6 +273,9 @@ export const useClientStore = defineStore('client', () => {
       seated = true;
       statusText.value = '';
       waitName.value = String(m.name || 'لاعب');
+      if (typeof m.avatar === 'string' && m.avatar) {
+        waitAvatar.value = m.avatar;
+      }
       viewData.value = null;
       ws.setView('client');
       return;
@@ -324,21 +328,34 @@ export const useClientStore = defineStore('client', () => {
     }
   }
 
-  function pickExistingPlayer(pid: string): void {
+  function pickExistingPlayer(pid: string, avatar?: string): void {
     unlockClientAudio();
     try {
-      conn?.send({ t: 'pick', pid, token: getClientToken() });
+      conn?.send({ t: 'pick', pid, avatar, token: getClientToken() });
     } catch {
       // Ignore
     }
   }
 
-  function pickCustomName(name: string): void {
+  function pickCustomName(name: string, avatar?: string): void {
     const clean = name.trim();
     if (!clean) return;
     unlockClientAudio();
     try {
-      conn?.send({ t: 'pick', name: clean, token: getClientToken() });
+      conn?.send({ t: 'pick', name: clean, avatar, token: getClientToken() });
+    } catch {
+      // Ignore
+    }
+  }
+
+  function changeAvatar(avatar: string): void {
+    if (!avatar) return;
+    waitAvatar.value = avatar;
+    if (viewData.value) {
+      viewData.value = { ...viewData.value, emoji: avatar };
+    }
+    try {
+      conn?.send({ t: 'avatar', avatar });
     } catch {
       // Ignore
     }
@@ -379,6 +396,7 @@ export const useClientStore = defineStore('client', () => {
     connectCanBack,
     pickList,
     waitName,
+    waitAvatar,
     viewData,
     floatingFx,
     arenaHidden,
@@ -388,6 +406,7 @@ export const useClientStore = defineStore('client', () => {
     toggleLocalMuted,
     pickExistingPlayer,
     pickCustomName,
+    changeAvatar,
     sendAction,
     disconnectAndReset,
   };

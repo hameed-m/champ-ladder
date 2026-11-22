@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import PlayerAvatar from '@/components/PlayerAvatar.vue';
 import { TOPICS } from '@/constants/game';
 import { useWorkspaceStore } from '@/stores/workspace';
 import { ar } from '@/utils/format';
@@ -46,8 +47,9 @@ const missRows = computed(() => {
     @click.self="ws.reportPlayer = null"
   >
     <div class="max-h-[88vh] w-full max-w-md overflow-auto rounded-2xl border-2 border-line bg-card p-5 shadow-2xl">
-      <h2 class="mb-2 text-center font-display text-3xl text-ink">
-        {{ p.emoji }} تقرير {{ p.name }}
+      <h2 class="mb-2 flex items-center justify-center gap-2 text-center font-display text-3xl text-ink">
+        <PlayerAvatar :avatar="p.emoji" size="md" />
+        <span>تقرير {{ p.name }}</span>
       </h2>
 
       <p class="mb-3 text-center text-sm font-bold text-ink/80">

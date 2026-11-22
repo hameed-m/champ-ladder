@@ -1,15 +1,22 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import ArenaBoard from '@/components/ArenaBoard.vue';
+import AvatarPickerModal from '@/components/AvatarPickerModal.vue';
 import ControllerPanel from '@/components/ControllerPanel.vue';
+import PlayerAvatar from '@/components/PlayerAvatar.vue';
+import { avatarDisplayText } from '@/constants/avatars';
+import { CARD } from '@/constants/game';
 import { useClientStore } from '@/stores/client';
 import { ar } from '@/utils/format';
 
 const client = useClientStore();
 const v = computed(() => client.viewData);
+const avatarModalOpen = ref(false);
+
+const currentAvatar = computed(() => v.value?.emoji || client.waitAvatar || '🦁');
 
 const fsHudLeft = computed(() =>
-  v.value ? `${v.value.emoji} ${v.value.name} (خانة ${ar(v.value.pos)}/${ar(v.value.last)})` : '',
+  v.value ? `${avatarDisplayText(v.value.emoji)} ${v.value.name} (خانة ${ar(v.value.pos)}/${ar(v.value.last)})` : '',
 );
 const fsHudCenter = computed(() =>
   v.value ? (v.value.turn ? '🎯 دورك الآن!' : `دور ${v.value.cur}`) : '',
@@ -28,14 +35,36 @@ const fsHudRight = computed(() => {
       {{ client.statusText }}
     </div>
 
-    <!-- Waiting Room Screen -->
+    <!-- Waiting Room Screen with Self-Service Avatar Customization (Req #1) -->
     <div
       v-if="client.waitName && !v"
       class="mx-auto max-w-xl rounded-2xl border-2 border-line bg-card p-6 text-center shadow-sm"
     >
-      <p class="text-xl font-bold text-ink">
-        مرحبًا <b>{{ client.waitName }}</b>! بانتظار بدء المباراة…
-      </p>
+      <div class="mb-3 flex flex-col items-center gap-2">
+        <button
+          type="button"
+          class="group relative cursor-pointer rounded-full p-1 ring-2 ring-accent/50 transition hover:scale-105 hover:ring-accent"
+          aria-label="تغيير شخصيتك"
+          @click="avatarModalOpen = true"
+        >
+          <PlayerAvatar :avatar="client.waitAvatar" size="xl" />
+          <span
+            class="absolute -bottom-1 -end-1 grid h-7 w-7 place-items-center rounded-full border-2 border-card bg-accent text-xs text-accent-ink shadow-xs"
+          >
+            ✏️
+          </span>
+        </button>
+        <p class="text-xl font-bold text-ink">
+          مرحبًا <b>{{ client.waitName }}</b>! بانتظار بدء المباراة…
+        </p>
+        <button
+          type="button"
+          class="mt-1 min-h-10 cursor-pointer rounded-xl border-2 border-accent bg-accent-soft px-4 text-sm font-extrabold text-ink transition hover:bg-accent hover:text-accent-ink"
+          @click="avatarModalOpen = true"
+        >
+          🎭 تغيير الأفاتار
+        </button>
+      </div>
     </div>
 
     <!-- Active Player Screen (Compact Stats + Question on Top + Hideable Arena) -->
@@ -43,12 +72,20 @@ const fsHudRight = computed(() => {
       <!-- Compact Self Strip + Local Audio + Toggle Arena Button -->
       <div class="mb-1.5 flex items-center justify-between gap-1.5">
         <div class="flex min-w-0 flex-1 items-center gap-2 rounded-xl border-2 border-line bg-card px-2.5 py-1.5">
-          <span
-            class="grid h-8 w-8 shrink-0 place-items-center rounded-full text-base text-white"
-            :style="{ backgroundColor: v.color }"
+          <button
+            type="button"
+            title="اضغط لتغيير شخصيتك"
+            aria-label="تغيير شخصيتك"
+            class="relative shrink-0 cursor-pointer rounded-full transition hover:scale-105"
+            @click="avatarModalOpen = true"
           >
-            {{ v.emoji }}
-          </span>
+            <PlayerAvatar :avatar="v.emoji" size="sm" :ring-color="v.color" />
+            <span
+              class="absolute -bottom-0.5 -end-0.5 grid h-3.5 w-3.5 place-items-center rounded-full bg-card text-[8px] shadow-xs"
+            >
+              ✏️
+            </span>
+          </button>
           <div class="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2 gap-y-0.5">
             <b class="truncate text-sm font-extrabold">{{ v.name }}</b>
             <small class="text-xs text-ink/75">
@@ -104,9 +141,12 @@ const fsHudRight = computed(() => {
           class="flex items-center gap-1.5 rounded-lg border bg-card px-2 py-1 text-xs"
           :class="p.turn ? 'border-accent ring-2 ring-accent/35' : 'border-line'"
         >
-          <i class="inline-block h-2.5 w-2.5 shrink-0 rounded-full" :style="{ backgroundColor: p.color }" />
-          <b class="font-extrabold">{{ p.emoji }} {{ p.name }}</b>
-          <small class="text-ink/75">خانة {{ ar(p.pos) }} · {{ ar(p.score) }}ن</small>
+          <PlayerAvatar :avatar="p.emoji" size="xs" :ring-color="p.color" />
+          <b class="font-extrabold">{{ p.name }}</b>
+          <small class="text-ink/75">
+            خانة {{ ar(p.pos) }} · {{ ar(p.score) }}ن
+            <span v-if="p.cards?.length">{{ p.cards.map((c) => CARD[c][0]).join('') }}</span>
+          </small>
         </div>
       </div>
 
@@ -128,11 +168,20 @@ const fsHudRight = computed(() => {
           :board="v.board"
           :players="v.players"
           :fx="client.floatingFx"
+          :effect="v.boardEffect"
           :fs-hud-left="fsHudLeft"
           :fs-hud-center="fsHudCenter"
           :fs-hud-right="fsHudRight"
         />
       </div>
     </div>
+
+    <AvatarPickerModal
+      :open="avatarModalOpen"
+      :current="currentAvatar"
+      title="اختر شخصيتك (الأفاتار)"
+      @close="avatarModalOpen = false"
+      @select="client.changeAvatar($event)"
+    />
   </section>
 </template>

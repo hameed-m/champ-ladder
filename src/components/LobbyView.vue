@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import MatchSettingsPanel from '@/components/MatchSettingsPanel.vue';
+import PlayerAvatar from '@/components/PlayerAvatar.vue';
 import { ARENAS, COLORS, RULES } from '@/constants/game';
 import { useGameStore } from '@/stores/game';
 import { useWorkspaceStore } from '@/stores/workspace';
@@ -107,9 +108,13 @@ function handleStartFromLobby() {
             :key="seat.token || seat.pid"
             class="flex items-center gap-2 py-2"
           >
-            <i class="inline-block h-3.5 w-3.5 rounded-full" :style="{ backgroundColor: COLORS[i % COLORS.length] }" />
+            <PlayerAvatar
+              :avatar="ws.findProfile(seat.pid)?.emoji || '🦁'"
+              size="sm"
+              :ring-color="COLORS[i % COLORS.length]"
+            />
             <b class="flex-1 text-base font-extrabold">
-              {{ ws.findProfile(seat.pid)?.emoji || '🦁' }} {{ ws.findProfile(seat.pid)?.name || 'لاعب' }}
+              {{ ws.findProfile(seat.pid)?.name || 'لاعب' }}
             </b>
             <small v-if="!game.live(seat)" class="text-xs text-bad">منقطع</small>
             <button

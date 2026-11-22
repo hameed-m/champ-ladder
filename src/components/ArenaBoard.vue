@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { getAvatarDef } from '@/constants/avatars';
 import { ARENAS, COLORS, OFF } from '@/constants/game';
 import { cellFor } from '@/services/board';
-import type { ArenaId, BoardData, BoardPlayerView, FloatingFx } from '@/types/game';
+import type { ArenaId, BoardData, BoardEffect, BoardPlayerView, FloatingFx } from '@/types/game';
 import { ar } from '@/utils/format';
 
 const props = defineProps<{
   board: BoardData;
   players: BoardPlayerView[];
   fx?: FloatingFx[];
+  effect?: BoardEffect | null;
   showQuickArena?: boolean;
   label?: string;
   fsHudLeft?: string;
@@ -22,6 +24,25 @@ const emit = defineEmits<{
 
 const wrapRef = ref<HTMLElement | null>(null);
 const isFs = ref(false);
+
+const ZOOM_STORAGE_KEY = 'sullam-zoom';
+const zoomEnabled = ref(true);
+
+try {
+  const savedZoom = localStorage.getItem(ZOOM_STORAGE_KEY);
+  if (savedZoom === '0') zoomEnabled.value = false;
+} catch {
+  // Ignore
+}
+
+function toggleZoom() {
+  zoomEnabled.value = !zoomEnabled.value;
+  try {
+    localStorage.setItem(ZOOM_STORAGE_KEY, zoomEnabled.value ? '1' : '0');
+  } catch {
+    // Ignore
+  }
+}
 
 interface ArenaStyleDef {
   bg: string;
@@ -113,6 +134,100 @@ const st = computed(() => ARENA_STYLES[arena.value] || ARENA_STYLES.classic);
 const arenaTitle = computed(() => (ARENAS.find((a) => a[0] === arena.value) || ARENAS[0]!)[1]);
 const tokenScale = computed(() => 1 + (n.value - 6) * 0.11);
 
+/* ---------- Smooth SVG Camera Zoom (Req #9) ---------- */
+const camBox = ref({ x: 0, y: 0, w: box.value, h: box.value });
+let camRaf = 0;
+
+function prefersReducedMotion(): boolean {
+  try {
+    return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+  } catch {
+    return false;
+  }
+}
+
+const targetCamBox = computed(() => {
+  const full = box.value;
+  const eff = props.effect;
+  if (!eff || !zoomEnabled.value || prefersReducedMotion()) {
+    return { x: 0, y: 0, w: full, h: full };
+  }
+  const activePlayer = props.players.find((p) => p.i === eff.playerIndex);
+  const focusPos = activePlayer ? activePlayer.pos : eff.toPos;
+  const center = cellFor(Math.max(1, Math.min(last.value, focusPos)), n.value);
+  const zoomFactor = eff.kind === 'shield-block' ? 1.95 : 1.78;
+  const w = Math.min(full, Math.max(260, full / zoomFactor));
+  const h = w;
+  const x = Math.max(0, Math.min(full - w, center.x - w / 2));
+  const y = Math.max(0, Math.min(full - h, center.y - h / 2));
+  return { x, y, w, h };
+});
+
+watch(
+  box,
+  (newBox) => {
+    cancelAnimationFrame(camRaf);
+    camBox.value = { x: 0, y: 0, w: newBox, h: newBox };
+  },
+);
+
+watch(
+  targetCamBox,
+  (target) => {
+    cancelAnimationFrame(camRaf);
+    const start = { ...camBox.value };
+    const duration = target.w < box.value ? 260 : 380;
+    const t0 = performance.now();
+
+    const step = (now: number) => {
+      const raw = Math.min(1, (now - t0) / duration);
+      const ease = 1 - Math.pow(1 - raw, 3);
+      camBox.value = {
+        x: start.x + (target.x - start.x) * ease,
+        y: start.y + (target.y - start.y) * ease,
+        w: start.w + (target.w - start.w) * ease,
+        h: start.h + (target.h - start.h) * ease,
+      };
+      if (raw < 1) {
+        camRaf = requestAnimationFrame(step);
+      }
+    };
+    camRaf = requestAnimationFrame(step);
+  },
+  { immediate: true },
+);
+
+const viewBoxStr = computed(
+  () =>
+    `${camBox.value.x.toFixed(1)} ${camBox.value.y.toFixed(1)} ${camBox.value.w.toFixed(1)} ${camBox.value.h.toFixed(1)}`,
+);
+
+/* ---------- Movement Light & Trail Geometry (Req #9 & #12) ---------- */
+const effectTheme = computed(() => {
+  const eff = props.effect;
+  if (!eff) return null;
+  const p = props.players.find((pl) => pl.i === eff.playerIndex);
+  const curPos = p ? p.pos : eff.toPos;
+  const fromCell = cellFor(Math.max(1, Math.min(last.value, eff.fromPos)), n.value);
+  const curCell = cellFor(Math.max(1, Math.min(last.value, curPos)), n.value);
+  const isFwd = eff.kind === 'fwd' || eff.kind === 'ladder';
+  const isBack = eff.kind === 'back' || eff.kind === 'snake';
+  const isShield = eff.kind === 'shield-block';
+  return {
+    id: eff.id,
+    kind: eff.kind,
+    playerIndex: eff.playerIndex,
+    fromCell,
+    curCell,
+    isFwd,
+    isBack,
+    isShield,
+    color: isFwd ? '#22c55e' : isBack ? '#ef4444' : '#38bdf8',
+    lightColor: isFwd ? '#86efac' : isBack ? '#fca5a5' : '#bae6fd',
+    gradId: isFwd ? 'glow-fwd' : isBack ? 'glow-back' : 'glow-shield',
+  };
+});
+
 const cells = computed(() => {
   const list = [];
   for (let k = 1; k <= last.value; k++) {
@@ -176,6 +291,15 @@ function tokenTransform(pos: number, idx: number): string {
   return `translate(${c.x + o[0] * tokenScale.value}px, ${c.y + o[1] * tokenScale.value}px)`;
 }
 
+function avatarSvgFor(emoji: string): string | null {
+  const def = getAvatarDef(emoji);
+  return def?.kind === 'svg' && def.svgInner ? def.svgInner : null;
+}
+
+function hasShield(p: BoardPlayerView): boolean {
+  return !!p.cards && p.cards.includes('shield');
+}
+
 function toggleFullscreen() {
   const el = wrapRef.value;
   if (!el) return;
@@ -199,7 +323,10 @@ function onFsChange() {
 }
 
 onMounted(() => document.addEventListener('fullscreenchange', onFsChange));
-onUnmounted(() => document.removeEventListener('fullscreenchange', onFsChange));
+onUnmounted(() => {
+  cancelAnimationFrame(camRaf);
+  document.removeEventListener('fullscreenchange', onFsChange);
+});
 </script>
 
 <template>
@@ -213,7 +340,7 @@ onUnmounted(() => document.removeEventListener('fullscreenchange', onFsChange));
   >
     <!-- Board Top Controls -->
     <div
-      class="mb-1.5 flex items-center justify-between gap-2"
+      class="mb-1.5 flex flex-wrap items-center justify-between gap-2"
       :class="isFs ? 'w-full max-w-[min(85vh,94vw)]' : ''"
     >
       <select
@@ -229,14 +356,31 @@ onUnmounted(() => document.removeEventListener('fullscreenchange', onFsChange));
         {{ label || arenaTitle }}
       </span>
 
-      <button
-        type="button"
-        class="inline-flex min-h-8.5 cursor-pointer items-center gap-1 rounded-xl border-2 border-line bg-card px-3 text-xs font-extrabold text-ink transition hover:border-accent"
-        :aria-pressed="isFs"
-        @click="toggleFullscreen"
-      >
-        {{ isFs ? '✕ خروج من ملء الشاشة' : '⛶ ملء الشاشة' }}
-      </button>
+      <div class="flex items-center gap-1.5">
+        <button
+          type="button"
+          :aria-pressed="zoomEnabled"
+          title="تفعيل أو إيقاف تقريب الكاميرا عند حركة اللاعبين"
+          class="inline-flex min-h-8.5 cursor-pointer items-center gap-1 rounded-xl border-2 px-2.5 text-xs font-extrabold transition"
+          :class="
+            zoomEnabled
+              ? 'border-accent bg-accent-soft text-ink'
+              : 'border-line bg-card text-ink/65 hover:border-accent'
+          "
+          @click="toggleZoom"
+        >
+          {{ zoomEnabled ? '🔍 تقريب ✓' : '🔍 تقريب ✕' }}
+        </button>
+
+        <button
+          type="button"
+          class="inline-flex min-h-8.5 cursor-pointer items-center gap-1 rounded-xl border-2 border-line bg-card px-3 text-xs font-extrabold text-ink transition hover:border-accent"
+          :aria-pressed="isFs"
+          @click="toggleFullscreen"
+        >
+          {{ isFs ? '✕ خروج من ملء الشاشة' : '⛶ ملء الشاشة' }}
+        </button>
+      </div>
     </div>
 
     <!-- Fullscreen HUD -->
@@ -251,7 +395,7 @@ onUnmounted(() => document.removeEventListener('fullscreenchange', onFsChange));
 
     <!-- SVG Board -->
     <svg
-      :viewBox="`0 0 ${box} ${box}`"
+      :viewBox="viewBoxStr"
       role="img"
       :aria-label="`لوحة اللعبة ${ar(n)} في ${ar(n)}`"
       class="mx-auto block h-auto w-full rounded-2xl border-4 transition-all duration-200"
@@ -260,6 +404,27 @@ onUnmounted(() => document.removeEventListener('fullscreenchange', onFsChange));
         isFs ? 'max-h-[84vh] max-w-[min(85vh,94vw)]' : 'max-w-[min(82vh,780px)]',
       ]"
     >
+      <defs>
+        <radialGradient id="glow-fwd" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#86efac" stop-opacity="0.95" />
+          <stop offset="45%" stop-color="#22c55e" stop-opacity="0.55" />
+          <stop offset="100%" stop-color="#22c55e" stop-opacity="0" />
+        </radialGradient>
+        <radialGradient id="glow-back" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#fca5a5" stop-opacity="0.95" />
+          <stop offset="45%" stop-color="#ef4444" stop-opacity="0.6" />
+          <stop offset="100%" stop-color="#ef4444" stop-opacity="0" />
+        </radialGradient>
+        <radialGradient id="glow-shield" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#e0f2fe" stop-opacity="0.95" />
+          <stop offset="45%" stop-color="#38bdf8" stop-opacity="0.55" />
+          <stop offset="100%" stop-color="#0284c7" stop-opacity="0" />
+        </radialGradient>
+        <clipPath id="token-avatar-clip">
+          <circle cx="0" cy="0" r="11.2" />
+        </clipPath>
+      </defs>
+
       <rect :width="box" :height="box" :fill="st.bg" />
 
       <!-- Tiles -->
@@ -484,7 +649,55 @@ onUnmounted(() => document.removeEventListener('fullscreenchange', onFsChange));
         {{ st.surpIcon }}
       </text>
 
-      <!-- Player Tokens -->
+      <!-- Movement Directional Light / Trail Layer (Req #9 & #12) -->
+      <g v-if="effectTheme" class="pointer-events-none">
+        <!-- Luminous trail between origin and current cell -->
+        <line
+          v-if="!effectTheme.isShield && (effectTheme.fromCell.x !== effectTheme.curCell.x || effectTheme.fromCell.y !== effectTheme.curCell.y)"
+          :x1="effectTheme.fromCell.x"
+          :y1="effectTheme.fromCell.y"
+          :x2="effectTheme.curCell.x"
+          :y2="effectTheme.curCell.y"
+          :stroke="effectTheme.color"
+          stroke-width="10"
+          stroke-linecap="round"
+          stroke-dasharray="12 10"
+          opacity="0.72"
+        />
+
+        <!-- Active Tile Directional Highlight Frame (Green on Forward / Red on Backward / Cyan on Shield) -->
+        <rect
+          :x="effectTheme.curCell.x - 46"
+          :y="effectTheme.curCell.y - 46"
+          width="92"
+          height="92"
+          :rx="st.rx"
+          :fill="effectTheme.color"
+          fill-opacity="0.24"
+          :stroke="effectTheme.lightColor"
+          stroke-width="5"
+        />
+
+        <!-- Expanding Light Aura on Active Tile -->
+        <circle
+          :cx="effectTheme.curCell.x"
+          :cy="effectTheme.curCell.y"
+          r="56"
+          :fill="`url(#${effectTheme.gradId})`"
+        />
+        <circle
+          :key="'rip-' + effectTheme.id"
+          :cx="effectTheme.curCell.x"
+          :cy="effectTheme.curCell.y"
+          r="34"
+          fill="none"
+          :stroke="effectTheme.lightColor"
+          stroke-width="4"
+          class="svg-move-ripple"
+        />
+      </g>
+
+      <!-- Arena-Themed Player Tokens + Avatars + Shield Vision FX (Req #1, #9, #10, #12) -->
       <g
         v-for="(p, i) in players"
         :key="'tok-' + p.i"
@@ -492,10 +705,141 @@ onUnmounted(() => document.removeEventListener('fullscreenchange', onFsChange));
         :style="{ transform: tokenTransform(p.pos, i) }"
       >
         <g :transform="`scale(${tokenScale})`">
-          <circle r="14" :fill="p.color || COLORS[i % COLORS.length]" stroke="#ffffff" stroke-width="3" />
-          <text y="6" text-anchor="middle" fill="#ffffff" font-size="16" font-weight="800">
-            {{ ar(i + 1) }}
-          </text>
+          <!-- Directional Glow Halo around Moving Player (Green Forward / Red Backward) -->
+          <circle
+            v-if="effectTheme && effectTheme.playerIndex === p.i"
+            r="30"
+            :fill="`url(#${effectTheme.gradId})`"
+          />
+
+          <!-- Active Shield Vision Effect (Req #12: Glowing Translucent Dome + Orbiting Energy Ring) -->
+          <g v-if="hasShield(p)" class="pointer-events-none">
+            <circle
+              r="22.5"
+              fill="url(#glow-shield)"
+              class="svg-shield-pulse"
+            />
+            <circle
+              r="19.5"
+              fill="rgba(56,189,248,0.16)"
+              stroke="#7dd3fc"
+              stroke-width="2"
+              stroke-dasharray="7 4"
+              class="svg-shield-orbit"
+            />
+            <polygon
+              points="0,-21 18,-10.5 18,10.5 0,21 -18,10.5 -18,-10.5"
+              fill="none"
+              stroke="#bae6fd"
+              stroke-width="1.3"
+              opacity="0.7"
+              class="svg-shield-pulse"
+            />
+          </g>
+
+          <!-- Shield Deflection / Shatter Shockwave Burst (Req #12) -->
+          <g
+            v-if="effectTheme && effectTheme.isShield && effectTheme.playerIndex === p.i"
+            :key="'shb-' + effectTheme.id"
+            class="svg-shield-burst pointer-events-none"
+          >
+            <circle r="22" fill="rgba(186,230,253,0.4)" stroke="#ffffff" stroke-width="3.5" />
+            <polygon
+              points="0,-25 21.6,-12.5 21.6,12.5 0,25 -21.6,12.5 -21.6,-12.5"
+              fill="none"
+              stroke="#38bdf8"
+              stroke-width="3"
+            />
+            <line x1="-22" y1="-22" x2="-13" y2="-13" stroke="#fef08a" stroke-width="2.5" stroke-linecap="round" />
+            <line x1="22" y1="-22" x2="13" y2="-13" stroke="#fef08a" stroke-width="2.5" stroke-linecap="round" />
+            <line x1="-22" y1="22" x2="-13" y2="13" stroke="#fef08a" stroke-width="2.5" stroke-linecap="round" />
+            <line x1="22" y1="22" x2="13" y2="13" stroke="#fef08a" stroke-width="2.5" stroke-linecap="round" />
+          </g>
+
+          <!-- Arena-Specific Token Frame (Req #10) -->
+          <!-- 1. Horror: Dark Gothic Octagon Crest -->
+          <g v-if="arena === 'horror'">
+            <polygon
+              points="-7,-17 7,-17 17,-7 17,7 7,17 -7,17 -17,7 -17,-7"
+              fill="#1e1035"
+              :stroke="p.color || COLORS[i % COLORS.length]"
+              stroke-width="3"
+            />
+            <circle r="13.5" fill="#2e1065" stroke="#c084fc" stroke-width="1.3" />
+          </g>
+
+          <!-- 2. Funny: Comic Candy Scalloped Bubble -->
+          <g v-else-if="arena === 'funny'">
+            <circle r="17.5" fill="#ffffff" />
+            <circle
+              r="15.2"
+              :fill="p.color || COLORS[i % COLORS.length]"
+              stroke="#ffca3a"
+              stroke-width="2.2"
+              stroke-dasharray="5 3"
+            />
+            <circle cx="-6" cy="-9" r="2.2" fill="#ffffff" opacity="0.7" />
+          </g>
+
+          <!-- 3. Space: Sci-Fi Neon Hex Pod -->
+          <g v-else-if="arena === 'space'">
+            <polygon
+              points="0,-18.5 16,-9.2 16,9.2 0,18.5 -16,9.2 -16,-9.2"
+              fill="#020617"
+              stroke="#22d3ee"
+              stroke-width="2.4"
+            />
+            <circle r="13.5" :fill="p.color || COLORS[i % COLORS.length]" stroke="#a5f3fc" stroke-width="1.5" />
+          </g>
+
+          <!-- 4. Jungle: Explorer Wooden Totem Ring -->
+          <g v-else-if="arena === 'jungle'">
+            <circle r="17.2" fill="#5c3a21" stroke="#d4a373" stroke-width="2.5" />
+            <circle r="13.8" :fill="p.color || COLORS[i % COLORS.length]" stroke="#fefae0" stroke-width="1.5" />
+            <circle cx="0" cy="-15.5" r="2" fill="#52b788" />
+            <circle cx="0" cy="15.5" r="2" fill="#52b788" />
+          </g>
+
+          <!-- 5. Classic: Champion Stadium Medallion -->
+          <g v-else>
+            <circle r="16.5" fill="#ffffff" />
+            <circle
+              r="14.5"
+              :fill="p.color || COLORS[i % COLORS.length]"
+              stroke="#fde047"
+              stroke-width="1.8"
+            />
+          </g>
+
+          <!-- Player Avatar Inside Token (Req #1) -->
+          <g clip-path="url(#token-avatar-clip)">
+            <svg
+              v-if="avatarSvgFor(p.emoji)"
+              x="-11.5"
+              y="-11.5"
+              width="23"
+              height="23"
+              viewBox="0 0 64 64"
+              v-html="avatarSvgFor(p.emoji)"
+            />
+            <text v-else y="5.5" text-anchor="middle" font-size="14.5">
+              {{ p.emoji || '🦁' }}
+            </text>
+          </g>
+
+          <!-- Crisp Player Number Badge (readable even when tokens overlap) -->
+          <g transform="translate(11.5, 11)">
+            <circle r="6.2" :fill="p.color || COLORS[i % COLORS.length]" stroke="#ffffff" stroke-width="1.8" />
+            <text y="2.8" text-anchor="middle" fill="#ffffff" font-size="8.5" font-weight="800">
+              {{ ar(i + 1) }}
+            </text>
+          </g>
+
+          <!-- Mini Shield Crest when Player Holds a Shield -->
+          <g v-if="hasShield(p)" transform="translate(-11.5, -11.5)">
+            <circle r="6.2" fill="#0284c7" stroke="#e0f2fe" stroke-width="1.5" />
+            <text y="3" text-anchor="middle" font-size="8">🛡️</text>
+          </g>
         </g>
       </g>
     </svg>

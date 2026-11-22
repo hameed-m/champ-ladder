@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { computed, markRaw, ref } from 'vue';
 import Peer, { type DataConnection } from 'peerjs';
 import QRCode from 'qrcode';
+import { sanitizeAvatarId } from '@/constants/avatars';
 import { CARD, COLORS, LEVELS, MAXP, REACT } from '@/constants/game';
 import {
   captionText,
@@ -10,8 +11,8 @@ import {
   crowdFx,
   ensureAC,
   loadVoicesManifest,
+  playSfxByName,
   preloadAudio,
-  SFX,
   startCrowd,
   stopComment,
   stopCrowd,
@@ -23,6 +24,7 @@ import { generateQuestion } from '@/services/questions';
 import type {
   ArenaId,
   BoardData,
+  BoardEffect,
   BoardPlayerView,
   CardType,
   ClientActionMessage,
@@ -31,9 +33,11 @@ import type {
   FloatingFx,
   GamePhase,
   MatchRankingItem,
+  MoveEffectKind,
   PlayerRuntime,
   PushTarget,
   Question,
+  SfxName,
 } from '@/types/game';
 import { ar, pickOne, rnd, sleep, within } from '@/utils/format';
 import { useThemeStore } from '@/stores/theme';
@@ -120,6 +124,7 @@ export const useGameStore = defineStore('game', () => {
   const showEndModal = ref(false);
   const rankings = ref<MatchRankingItem[]>([]);
   const floatingFx = ref<FloatingFx[]>([]);
+  const boardEffect = ref<BoardEffect | null>(null);
 
   let peer: Peer | null = null;
   let tid = 0;
@@ -127,6 +132,7 @@ export const useGameStore = defineStore('game', () => {
   let lastSec = 0;
   let epoch = 0;
   let fxSeq = 0;
+  let boardFxSeq = 0;
   const reactAt: Record<number, number> = {};
 
   const lastSquare = computed(() => board.value.n * board.value.n);
@@ -174,9 +180,34 @@ export const useGameStore = defineStore('game', () => {
     players.value.forEach((_, idx) => pushSocketMsg(idx, payload));
   }
 
-  function playSfx(name: NonNullable<ClientAudioPacket['sfx']>): void {
-    SFX[name]();
-    broadcastAudio({ kind: 'sfx', sfx: name });
+  function setBoardEffect(
+    playerIndex: number,
+    kind: MoveEffectKind,
+    fromPos: number,
+    toPos: number,
+    stepIndex?: number,
+    totalSteps?: number,
+  ): void {
+    boardEffect.value = {
+      id: ++boardFxSeq,
+      playerIndex,
+      kind,
+      fromPos,
+      toPos,
+      stepIndex,
+      totalSteps,
+    };
+  }
+
+  function clearBoardEffect(): void {
+    if (boardEffect.value !== null) {
+      boardEffect.value = null;
+    }
+  }
+
+  function playSfx(name: SfxName, stepIdx?: number, totalSteps?: number): void {
+    playSfxByName(name, stepIdx);
+    broadcastAudio({ kind: 'sfx', sfx: name, stepIdx, totalSteps });
   }
 
   function playWhistle(): void {
@@ -210,7 +241,14 @@ export const useGameStore = defineStore('game', () => {
     if (!ws.currentSettings.pushback || players.value.length <= 1) return [];
     return players.value
       .filter((x, idx) => idx !== playerIdx && x.pos > 1)
-      .map((x) => ({ i: x.i, name: x.name, emoji: x.emoji, pos: x.pos, color: x.color }));
+      .map((x) => ({
+        i: x.i,
+        name: x.name,
+        emoji: x.emoji,
+        pos: x.pos,
+        color: x.color,
+        shielded: x.cards.includes('shield'),
+      }));
   }
 
   function buildViewFor(i: number, consumeBuzz = true): ClientViewMessage {
@@ -259,7 +297,9 @@ export const useGameStore = defineStore('game', () => {
         pos: x.pos,
         score: x.score,
         turn: x.turn,
+        cards: x.cards ? [...x.cards] : [],
       })),
+      boardEffect: boardEffect.value ? { ...boardEffect.value } : null,
       msg:
         i === cur.value || phase.value === 'race' || phase.value === 'end' || phase.value === 'choose'
           ? msg.value || ''
@@ -448,7 +488,7 @@ export const useGameStore = defineStore('game', () => {
         broadcastState();
         pushToPlayer(players.value.findIndex((p) => p.token === existing.token));
       } else {
-        c.send({ t: 'wait', name: pObj ? pObj.name : 'لاعب' });
+        c.send({ t: 'wait', name: pObj ? pObj.name : 'لاعب', avatar: pObj ? pObj.emoji : '🦁' });
       }
       return;
     }
@@ -459,20 +499,24 @@ export const useGameStore = defineStore('game', () => {
     sendPickList(c);
   }
 
-  function handlePick(c: DataConnection, m: { pid?: string; name?: string; token?: string }): void {
+  function handlePick(c: DataConnection, m: { pid?: string; name?: string; avatar?: string; token?: string }): void {
     if (ws.view === 'game' || seats.value.length >= MAXP || seats.value.some((s) => s.token === m.token)) return;
     let p = m.pid ? ws.findProfile(m.pid) : undefined;
     if (p && seats.value.some((s) => s.pid === p!.id)) {
       sendPickList(c);
       return;
     }
+    const cleanAv = sanitizeAvatarId(m.avatar);
     if (!p) {
       const nm = String(m.name || '').trim().slice(0, 14);
       if (!nm) return;
-      p = ws.currentRoom.profiles.find((x) => x.name === nm) || ws.addProfile(nm);
+      p = ws.currentRoom.profiles.find((x) => x.name === nm) || ws.addProfile(nm, cleanAv || undefined);
+    }
+    if (cleanAv && p.emoji !== cleanAv) {
+      ws.setPlayerAvatar(p, cleanAv);
     }
     seats.value.push({ pid: p.id, token: String(m.token || ''), conn: markRaw(c), seen: Date.now() });
-    c.send({ t: 'wait', name: p.name });
+    c.send({ t: 'wait', name: p.name, avatar: p.emoji });
   }
 
   function handleConn(c: DataConnection): void {
@@ -480,11 +524,29 @@ export const useGameStore = defineStore('game', () => {
       if (!raw || typeof raw !== 'object') return;
       const m = raw as Record<string, unknown>;
       if (m.t === 'hello') return handleHello(c, String(m.token || ''));
-      if (m.t === 'pick') return handlePick(c, m as { pid?: string; name?: string; token?: string });
+      if (m.t === 'pick') return handlePick(c, m as { pid?: string; name?: string; avatar?: string; token?: string });
       const s = seats.value.find((x) => x.conn === c);
       if (!s) return;
       s.seen = Date.now();
       if (m.t === 'pong') return;
+      if (m.t === 'avatar') {
+        const cleanAv = sanitizeAvatarId(m.avatar);
+        if (!cleanAv) return;
+        const pr = ws.findProfile(s.pid);
+        if (pr) ws.setPlayerAvatar(pr, cleanAv);
+        const idx = players.value.findIndex((p) => p.token === s.token);
+        if (ws.view === 'game' && idx >= 0 && players.value[idx]) {
+          players.value[idx]!.emoji = cleanAv;
+          broadcastState();
+        } else if (pr) {
+          try {
+            c.send({ t: 'wait', name: pr.name, avatar: pr.emoji });
+          } catch {
+            // Ignore
+          }
+        }
+        return;
+      }
       const i = players.value.findIndex((p) => p.token === s.token);
       if (i >= 0) act(i, m as unknown as ClientActionMessage);
     });
@@ -564,6 +626,7 @@ export const useGameStore = defineStore('game', () => {
     dice.value = 0;
     animDice.value = null;
     captionText.value = '';
+    clearBoardEffect();
 
     board.value = generateBoardData(s, mode.value === 'online');
     ws.setView('game');
@@ -647,6 +710,7 @@ export const useGameStore = defineStore('game', () => {
 
   function setTurn(): void {
     clearInterval(tid);
+    clearBoardEffect();
     phase.value = 'ready';
     q.value = null;
     dice.value = 0;
@@ -770,21 +834,57 @@ export const useGameStore = defineStore('game', () => {
     const target = players.value[targetIdx];
     if (!target || target === actor || target.pos <= 1) return;
     phase.value = 'busy';
-    setMsg(`↩️ ${actor.name} قرر إرجاع ${target.name} ${ar(d)} خانات للخلف!`, 'ok');
-    playSfx('down');
-    crowdFx('roar', 0.7);
+
+    /* Req #12: Shield blocks opponent pushbacks with crystal barrier shatter VFX */
+    if (target.cards.includes('shield')) {
+      target.cards.splice(target.cards.indexOf('shield'), 1);
+      target.buzz = 'good';
+      setBoardEffect(target.i, 'shield-block', target.pos, target.pos);
+      setMsg(`🛡️ الدرع حمى ${target.name} وصدّ إرجاع ${actor.name}!`, 'ok');
+      playSfx('shieldBlock');
+      crowdFx('cheer', 0.75);
+      broadcastState();
+      await within(playComment(['shield_push'], `الدرع يصد الهجمة عن ${target.name}!`), 3200);
+      await sleep(300);
+      if (ep !== epoch || !(await gate(ep))) return;
+      clearBoardEffect();
+      cur.value = (cur.value + 1) % players.value.length;
+      setTurn();
+      return;
+    }
+
+    const startPos = target.pos;
+    const estEnd = Math.max(1, startPos - d);
+    setMsg(`↩️ ${actor.name} قرر إرجاع ${target.name} ${ar(d)} خانات للخلف!`, 'bad');
+    setBoardEffect(target.i, 'back', startPos, estEnd, 0, d);
+    crowdFx('roar', 0.65);
     broadcastState();
-    await sleep(900);
+    await sleep(450);
     if (ep !== epoch || !(await gate(ep))) return;
     await stepBackTo(target, d, ep);
     if (ep !== epoch || !(await gate(ep))) return;
-    await resolveSquareEffects(target, ep, 0);
+    await resolveSquareEffects(target, ep, 0, true);
     if (ep !== epoch || won.value || !(await gate(ep))) return;
+    clearBoardEffect();
     cur.value = (cur.value + 1) % players.value.length;
     setTurn();
   }
 
+  function changePlayerAvatar(playerIdx: number, rawAvatar: string): void {
+    const cleanAv = sanitizeAvatarId(rawAvatar);
+    const p = players.value[playerIdx];
+    if (!cleanAv || !p) return;
+    p.emoji = cleanAv;
+    const pr = ws.findProfile(p.pid);
+    if (pr) ws.setPlayerAvatar(pr, cleanAv);
+    broadcastState();
+  }
+
   function act(i: number, m: ClientActionMessage): void {
+    if (m.t === 'avatar' && m.avatar) {
+      changePlayerAvatar(i, m.avatar);
+      return;
+    }
     if (paused.value && m.t !== 'react') return;
     if (m.t === 'react' && m.e) {
       react(i, m.e);
@@ -1036,22 +1136,36 @@ export const useGameStore = defineStore('game', () => {
   }
 
   async function stepTo(p: PlayerRuntime, k: number, ep: number): Promise<void> {
+    const startPos = p.pos;
+    const totalSteps = Math.min(k, Math.max(0, lastSquare.value - p.pos));
     for (let i = 0; i < k && p.pos < lastSquare.value; i++) {
       p.pos++;
-      playSfx('step');
+      setBoardEffect(p.i, 'fwd', startPos, p.pos, i, totalSteps);
+      playSfx('moveFwdStep', i, totalSteps);
       broadcastState();
-      await sleep(260);
+      await sleep(270);
       if (ep !== epoch) return;
+    }
+    if (totalSteps > 0 && ep === epoch) {
+      playSfx('moveFwdFinish');
+      await sleep(160);
     }
   }
 
   async function stepBackTo(p: PlayerRuntime, k: number, ep: number): Promise<void> {
+    const startPos = p.pos;
+    const totalSteps = Math.min(k, Math.max(0, p.pos - 1));
     for (let i = 0; i < k && p.pos > 1; i++) {
       p.pos--;
-      playSfx('step');
+      setBoardEffect(p.i, 'back', startPos, p.pos, i, totalSteps);
+      playSfx('moveBackStep', i, totalSteps);
       broadcastState();
-      await sleep(260);
+      await sleep(280);
       if (ep !== epoch) return;
+    }
+    if (totalSteps > 0 && ep === epoch) {
+      playSfx('moveBackFinish');
+      await sleep(180);
     }
   }
 
@@ -1066,10 +1180,10 @@ export const useGameStore = defineStore('game', () => {
   async function advance(p: PlayerRuntime, d: number, ep: number): Promise<void> {
     await stepTo(p, d, ep);
     if (ep !== epoch || finishIf(p)) return;
-    await resolveSquareEffects(p, ep, 0);
+    await resolveSquareEffects(p, ep, 0, false);
   }
 
-  async function resolveSquareEffects(p: PlayerRuntime, ep: number, depth = 0): Promise<void> {
+  async function resolveSquareEffects(p: PlayerRuntime, ep: number, depth = 0, wasPushback = false): Promise<void> {
     if (ep !== epoch || finishIf(p) || depth > 5) return;
     const from = p.pos;
     const ladTo = board.value.lad[from];
@@ -1080,12 +1194,16 @@ export const useGameStore = defineStore('game', () => {
 
     if (shield) {
       p.cards.splice(p.cards.indexOf('shield'), 1);
+      setBoardEffect(p.i, 'shield-block', from, from);
       setMsg(`🛡️ الدرع أنقذ ${p.name} من الحية!`, 'ok');
-      crowdFx('cheer', 0.6);
-      playSfx('up');
+      crowdFx('cheer', 0.7);
+      playSfx('shieldBlock');
       broadcastState();
       await within(playComment(['shield'], 'الدرع ينقذه من الحية!'), 3500);
+      clearBoardEffect();
+      broadcastState();
     } else if (to !== undefined) {
+      setBoardEffect(p.i, up ? 'ladder' : 'snake', from, to);
       setMsg(up ? `🪜 سلّم! ${p.name} يصعد إلى ${ar(to)}` : `🐍 حية! ${p.name} ينزل إلى ${ar(to)}`, up ? 'ok' : 'bad');
       p.buzz = up ? 'good' : 'bad';
       playSfx(up ? 'up' : 'down');
@@ -1101,15 +1219,24 @@ export const useGameStore = defineStore('game', () => {
       await sleep(700);
       if (ep !== epoch) return;
       p.pos = to;
+      setBoardEffect(p.i, up ? 'ladder' : 'snake', from, to);
       broadcastState();
       await Promise.all([sleep(700), c]);
       if (ep !== epoch || finishIf(p)) return;
       if (board.value.lad[p.pos] !== undefined || board.value.snk[p.pos] !== undefined) {
-        await resolveSquareEffects(p, ep, depth + 1);
+        await resolveSquareEffects(p, ep, depth + 1, false);
         return;
       }
+      clearBoardEffect();
+      broadcastState();
+    } else if (wasPushback) {
+      await within(playComment(['pushback', 'n' + from], `${p.name} تراجع إلى الخانة ${ar(from)}!`), 2800);
+      clearBoardEffect();
+      broadcastState();
     } else {
       await within(playComment(['move', 'n' + from], `${p.name} في الخانة ${ar(from)}!`), 3500);
+      clearBoardEffect();
+      broadcastState();
     }
 
     if (!(await gate(ep))) return;
@@ -1176,6 +1303,7 @@ export const useGameStore = defineStore('game', () => {
   function finish(p: PlayerRuntime): void {
     won.value = true;
     clearInterval(tid);
+    clearBoardEffect();
     phase.value = 'end';
     winnerName.value = p.name;
     playSfx('win');
@@ -1295,6 +1423,7 @@ export const useGameStore = defineStore('game', () => {
     showEndModal,
     rankings,
     floatingFx,
+    boardEffect,
     anyDisconnected,
     localControllerView,
     live,
@@ -1305,6 +1434,7 @@ export const useGameStore = defineStore('game', () => {
     startGame,
     toMenu,
     act,
+    changePlayerAvatar,
     togglePause,
     newQuestion,
     skipTurn,

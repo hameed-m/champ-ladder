@@ -472,6 +472,11 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     save();
   }
 
+  function setPlayerAvatar(p: PlayerProfile, avatarId: string): void {
+    p.emoji = avatarId;
+    save();
+  }
+
   function togglePlayerTopic(p: PlayerProfile, topic: TopicId): void {
     const i = p.topics.indexOf(topic);
     if (i < 0) p.topics.push(topic);
@@ -588,6 +593,7 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     findProfile,
     deleteProfile,
     cyclePlayerEmoji,
+    setPlayerAvatar,
     togglePlayerTopic,
     togglePlayerTable,
     cfgOf,

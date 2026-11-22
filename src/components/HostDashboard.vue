@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import AvatarPickerModal from '@/components/AvatarPickerModal.vue';
 import MatchSettingsPanel from '@/components/MatchSettingsPanel.vue';
+import PlayerAvatar from '@/components/PlayerAvatar.vue';
 import ThemeColorPicker from '@/components/ThemeColorPicker.vue';
 import {
   ALLT,
@@ -53,8 +55,19 @@ let delRoomTimer = 0;
 /* Players */
 const newPlayerName = ref('');
 const confirmDelPlayerId = ref<string | null>(null);
+const avatarEditProfileId = ref<string | null>(null);
 const errMsg = ref('');
 const voiceMsg = ref('');
+
+const avatarEditProfile = computed(() =>
+  avatarEditProfileId.value ? ws.findProfile(avatarEditProfileId.value) || null : null,
+);
+
+function handleSelectProfileAvatar(avatarId: string) {
+  if (avatarEditProfile.value) {
+    ws.setPlayerAvatar(avatarEditProfile.value, avatarId);
+  }
+}
 
 const s = computed(() => ws.currentSettings);
 const rm = computed(() => ws.currentRoom);
@@ -454,11 +467,12 @@ function handleStart() {
             <div class="flex items-center gap-2">
               <button
                 type="button"
-                aria-label="تغيير الرمز"
-                class="grid h-9 w-9 shrink-0 cursor-pointer place-items-center rounded-lg border-2 border-line bg-bg text-lg transition hover:border-accent"
-                @click="ws.cyclePlayerEmoji(p)"
+                aria-label="تغيير الأفاتار"
+                title="اضغط لاختيار أفاتار اللاعب"
+                class="grid h-10 w-10 shrink-0 cursor-pointer place-items-center rounded-xl border-2 border-line bg-bg transition hover:border-accent"
+                @click="avatarEditProfileId = p.id"
               >
-                {{ p.emoji }}
+                <PlayerAvatar :avatar="p.emoji" size="sm" />
               </button>
               <b class="min-w-0 flex-1 truncate text-base font-extrabold">{{ p.name }}</b>
               <button
@@ -717,5 +731,13 @@ function handleStart() {
         {{ s.mode === 'multi' ? `فتح غرفة «${rm.name}» للأجهزة 🚀` : 'ابدأ اللعب الآن 🚀' }}
       </button>
     </div>
+
+    <AvatarPickerModal
+      :open="!!avatarEditProfile"
+      :current="avatarEditProfile?.emoji || '🦁'"
+      :title="avatarEditProfile ? `اختر أفاتار ${avatarEditProfile.name}` : 'اختر الأفاتار'"
+      @close="avatarEditProfileId = null"
+      @select="handleSelectProfileAvatar"
+    />
   </div>
 </template>

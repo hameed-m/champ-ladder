@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import PlayerAvatar from '@/components/PlayerAvatar.vue';
 import { APP_TITLE_AR } from '@/constants/game';
 import { useGameStore } from '@/stores/game';
 import { ar } from '@/utils/format';
@@ -49,8 +50,8 @@ async function copyResult() {
           :key="x.rank + x.name"
           class="flex items-center gap-2 py-2"
         >
-          <i class="inline-block h-3.5 w-3.5 rounded-full" :style="{ backgroundColor: x.color }" />
-          <b class="font-extrabold">{{ x.emoji }} {{ x.name }}</b>
+          <PlayerAvatar :avatar="x.emoji" size="sm" :ring-color="x.color" />
+          <b class="font-extrabold">{{ x.name }}</b>
           <span class="ms-auto text-sm text-ink/80">
             {{ ar(x.score) }} نقطة، {{ ar(x.correct) }} من {{ ar(x.correct + x.wrong) }} صحيحة
           </span>

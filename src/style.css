@@ -29,6 +29,85 @@
   }
 }
 
+@keyframes shield-orbit {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes shield-pulse {
+  0%, 100% {
+    opacity: 0.55;
+    transform: scale(0.96);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.06);
+  }
+}
+
+@keyframes shield-burst {
+  0% {
+    opacity: 1;
+    transform: scale(0.75);
+  }
+  60% {
+    opacity: 0.85;
+    transform: scale(1.85);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.4);
+  }
+}
+
+@keyframes move-ripple {
+  0% {
+    opacity: 0.95;
+    transform: scale(0.5);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.65);
+  }
+}
+
+.svg-shield-orbit {
+  animation: shield-orbit 6s linear infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.svg-shield-pulse {
+  animation: shield-pulse 2s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.svg-shield-burst {
+  animation: shield-burst 0.85s ease-out forwards;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.svg-move-ripple {
+  animation: move-ripple 0.65s ease-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .svg-shield-orbit,
+  .svg-shield-pulse,
+  .svg-shield-burst,
+  .svg-move-ripple {
+    animation: none;
+  }
+}
+
 /* Dynamic OKLCH Harmonious Theme Engine (0–360° Hue + 0–100% Vividness) */
 :root {
   --theme-hue: 162;
