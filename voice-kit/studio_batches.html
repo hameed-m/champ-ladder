@@ -1,0 +1,1753 @@
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
+    <title>دفعات Google AI Studio — سلّم الأبطال</title>
+    <style>
+      body{font-family:system-ui,sans-serif;max-width:900px;margin:24px auto;padding:0 16px;background:#0f172a;color:#f8fafc}
+      .card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:16px;margin-bottom:18px}
+      h3{margin:0 0 8px;color:#38bdf8} .ids{font-size:12px;color:#94a3b8;margin-bottom:10px;direction:ltr}
+      .row{display:flex;gap:10px;margin-bottom:8px;align-items:center}
+      button{background:#0284c7;color:#fff;border:none;padding:8px 14px;border-radius:8px;cursor:pointer;font-weight:600;white-space:nowrap}
+      button.done{background:#16a34a}
+      input,textarea{width:100%;background:#0f172a;color:#e2e8f0;border:1px solid #475569;border-radius:8px;padding:8px;font-family:inherit}
+      code{background:#334155;padding:2px 6px;border-radius:4px;color:#fbbf24;direction:ltr;display:inline-block}
+      ol li{margin-bottom:6px;line-height:1.6}
+    </style></head><body>
+    <h1>توليد أصوات «سلّم الأبطال» من Google AI Studio بـ 20 دفعات فقط</h1>
+    <ol>
+      <li>افتح <b>Google AI Studio &rarr; Generate Speech</b> واختر الصوت <b>Fenrir</b> (Single-speaker audio).</li>
+      <li>لكل دفعة بالأسفل: اضغط <b>نسخ Style Instructions</b> والصقه في خانة الـ Style، ثم اضغط <b>نسخ نص الدفعة</b> والصقه في خانة النص.</li>
+      <li>شغّل التوليد (Run) وحمّل الملف الصوتي داخل المجلد: <code>D:\سلم الأبطال\voice-kit\batches</code> باسم <code>batch_1.wav</code>، <code>batch_2.wav</code> ... إلخ.</li>
+      <li>بعد تحميل الدفعات، شغّل الأمر: <code>python3 generate_voices.py --split-studio</code> ليقوم بتقطيعها تلقائيًا إلى 391 ملف MP3 وتحديث <code>manifest.json</code>!</li>
+    </ol>
+    
+        <div class="card">
+          <h3>الدفعة 1 من 20 (5 مقطع) — احفظ الملف باسم: <code>batch_1.wav</code></h3>
+          <div class="ids">welcome_0, card_0, card_1, swap_0, surprise_0</div>
+          <div class="row">
+            <button onclick="copyText('style_1', this)">1. نسخ Style Instructions</button>
+            <input id="style_1" value="excited and warm, big smile, energetic but clear" readonly>
+          </div>
+          <div class="row">
+            <button onclick="copyText('text_1', this)">2. نسخ نص الدفعة (5 جملة)</button>
+          </div>
+          <textarea id="text_1" rows="6" readonly>أهلًا وسهلًا بكم في الملعب! الأجواء نار، وعلى بركة الله تبدأ المباراة!
+
+. . . . .
+
+بطاقة قوة جديدة!
+
+. . . . .
+
+حصل على بطاقة! الأمور بتحلو!
+
+. . . . .
+
+تبديل السؤال! فرصة جديدة!
+
+. . . . .
+
+مفاجأة! ماذا يوجد في الصندوق؟</textarea>
+        </div>
+        <div class="card">
+          <h3>الدفعة 2 من 20 (6 مقطع) — احفظ الملف باسم: <code>batch_2.wav</code></h3>
+          <div class="ids">roll_0, roll_1, roll_2, move_0, move_1, move_2</div>
+          <div class="row">
+            <button onclick="copyText('style_2', this)">1. نسخ Style Instructions</button>
+            <input id="style_2" value="rising suspense, quick, building excitement" readonly>
+          </div>
+          <div class="row">
+            <button onclick="copyText('text_2', this)">2. نسخ نص الدفعة (6 جملة)</button>
+          </div>
+          <textarea id="text_2" rows="6" readonly>يرمي النرد!
+
+. . . . .
+
+والنرد يتدحرج... كم بيطلع؟
+
+. . . . .
+
+استعد! النرد في الهواء!
+
+. . . . .
+
+يتقدم إلى الخانة
+
+. . . . .
+
+تمريرة رائعة، إلى الخانة
+
+. . . . .
+
+ينطلق إلى الخانة</textarea>
+        </div>
+        <div class="card">
+          <h3>الدفعة 3 من 20 (24 مقطع) — احفظ الملف باسم: <code>batch_3.wav</code></h3>
+          <div class="ids">correct_0, correct_1, correct_2, correct_3, correct_4, correct_5, correct_6, fast_0, fast_1, fast_2, streak_0, streak_1, streak_2, ladder_0, ladder_1, win_0, win_1, allwin_0, allwin_1, stolen_0, stolen_1, penwin_0, penwin_1, shield_0</div>
+          <div class="row">
+            <button onclick="copyText('style_3', this)">1. نسخ Style Instructions</button>
+            <input id="style_3" value="electrifying live football commentary, shouting with joy, fast and breathless" readonly>
+          </div>
+          <div class="row">
+            <button onclick="copyText('text_3', this)">2. نسخ نص الدفعة (24 جملة)</button>
+          </div>
+          <textarea id="text_3" rows="6" readonly>إجابة صحيحة! يا سلام يا سلام!
+
+. . . . .
+
+رائع! رائع! رائع!
+
+. . . . .
+
+تسديدة قوية... في الشباك!
+
+. . . . .
+
+ما شاء الله! إجابة دقيقة!
+
+. . . . .
+
+نعم! نعم! هذا هو الجواب!
+
+. . . . .
+
+وين رايحة؟! مباشرة في الهدف!
+
+. . . . .
+
+يا سلام عليك! لعب كبير!
+
+. . . . .
+
+بسرعة البرق! يا سلام!
+
+. . . . .
+
+ما هذه السرعة؟! مذهل!
+
+. . . . .
+
+ما لحقنا نشوف الإجابة! ما شاء الله!
+
+. . . . .
+
+سلسلة نارية! الجمهور يشتعل!
+
+. . . . .
+
+لا أحد يوقف هذا البطل!
+
+. . . . .
+
+ثلاثة ورا بعض! يا سلام!
+
+. . . . .
+
+سلّم! صعود صاروخي إلى الخانة
+
+. . . . .
+
+يا سلام! يصعد السلّم إلى الخانة
+
+. . . . .
+
+هدف! هدف! هدف! قووووول! ألف مبروك يا بطل!
+
+. . . . .
+
+انتهت المباراة! فوز عظيم! مبروك مبروك مبروك!
+
+. . . . .
+
+أسرع إجابة في الملعب! الجائزة له!
+
+. . . . .
+
+خطف الجائزة! يا سلام!
+
+. . . . .
+
+خطفها! يا سلام عليه!
+
+. . . . .
+
+سرقة نظيفة! ما شاء الله!
+
+. . . . .
+
+في الشباك! فاز بالمواجهة!
+
+. . . . .
+
+انتصر في ضربة الجزاء! يا سلام!
+
+. . . . .
+
+الدرع ينقذه من الحية! يا سلام!</textarea>
+        </div>
+        <div class="card">
+          <h3>الدفعة 4 من 20 (6 مقطع) — احفظ الملف باسم: <code>batch_4.wav</code></h3>
+          <div class="ids">wrong_0, wrong_1, wrong_2, wrong_3, timeout_0, timeout_1</div>
+          <div class="row">
+            <button onclick="copyText('style_4', this)">1. نسخ Style Instructions</button>
+            <input id="style_4" value="crushed disappointment, a loud groan, then sympathetic" readonly>
+          </div>
+          <div class="row">
+            <button onclick="copyText('text_4', this)">2. نسخ نص الدفعة (6 جملة)</button>
+          </div>
+          <textarea id="text_4" rows="6" readonly><gasp> الكرة خارج المرمى!
+
+. . . . .
+
+يا خسارة! كادت أن تدخل!
+
+. . . . .
+
+فرصة ضائعة... لا بأس، حاول مرة أخرى!
+
+. . . . .
+
+أوووه! قريبة، قريبة مرة!
+
+. . . . .
+
+انتهى الوقت! الحكم يطلق الصافرة!
+
+. . . . .
+
+الوقت راح! يا خسارة!</textarea>
+        </div>
+        <div class="card">
+          <h3>الدفعة 5 من 20 (2 مقطع) — احفظ الملف باسم: <code>batch_5.wav</code></h3>
+          <div class="ids">snake_0, snake_1</div>
+          <div class="row">
+            <button onclick="copyText('style_5', this)">1. نسخ Style Instructions</button>
+            <input id="style_5" value="dramatic shock, gasping, loud" readonly>
+          </div>
+          <div class="row">
+            <button onclick="copyText('text_5', this)">2. نسخ نص الدفعة (2 جملة)</button>
+          </div>
+          <textarea id="text_5" rows="6" readonly><gasp> يا للهول! الحية! هبوط إلى الخانة
+
+. . . . .
+
+يا لها من لحظة صعبة! الحية تنزله إلى الخانة</textarea>
+        </div>
+        <div class="card">
+          <h3>الدفعة 6 من 20 (8 مقطع) — احفظ الملف باسم: <code>batch_6.wav</code></h3>
+          <div class="ids">all_0, all_1, steal_0, steal_1, penalty_0, penalty_1, double_0, freeze_0</div>
+          <div class="row">
+            <button onclick="copyText('style_6', this)">1. نسخ Style Instructions</button>
+            <input id="style_6" value="urgent announcement, loud, fast, thrilling" readonly>
+          </div>
+          <div class="row">
+            <button onclick="copyText('text_6', this)">2. نسخ نص الدفعة (8 جملة)</button>
+          </div>
+          <textarea id="text_6" rows="6" readonly>سؤال للجميع! الأسرع يفوز!
+
+. . . . .
+
+انتبهوا كلكم! من يجيب أولًا؟
+
+. . . . .
+
+الفرصة مفتوحة! من يخطف الإجابة؟
+
+. . . . .
+
+الكرة حرة! من يلحق؟
+
+. . . . .
+
+ضربة جزاء! مواجهة مباشرة بين لاعبين!
+
+. . . . .
+
+التقيا في الخانة نفسها! مواجهة!
+
+. . . . .
+
+نرد مضاعف! الخطوات بتزيد!
+
+. . . . .
+
+تجميد! اللاعب التالي وقته نصف!</textarea>
+        </div>
+        <div class="card">
+          <h3>الدفعة 7 من 20 (25 مقطع) — احفظ الملف باسم: <code>batch_7.wav</code></h3>
+          <div class="ids">p_1, p_2, p_3, p_4, name_حسن, name_حسين, name_عباس, name_محمد, name_الخوارزمي, name_الفاتح, name_محمد_الفاتح, name_أحمد, name_علي, name_هادي, name_محمد_الخوارزمي, name_حميد, name_عبدو, name_موسى, name_جعفر, name_حيدر, name_بوفارس, name_زينب, name_فاطمه, name_رقيه, name_رنا</div>
+          <div class="row">
+            <button onclick="copyText('style_7', this)">1. نسخ Style Instructions</button>
+            <input id="style_7" value="announcing a player's name, proud and excited, loud" readonly>
+          </div>
+          <div class="row">
+            <button onclick="copyText('text_7', this)">2. نسخ نص الدفعة (25 جملة)</button>
+          </div>
+          <textarea id="text_7" rows="6" readonly>اللاعب رقم واحد
+
+. . . . .
+
+اللاعب رقم اثنين
+
+. . . . .
+
+اللاعب رقم ثلاثة
+
+. . . . .
+
+اللاعب رقم أربعة
+
+. . . . .
+
+حسن!
+
+. . . . .
+
+حسين!
+
+. . . . .
+
+عباس!
+
+. . . . .
+
+محمد!
+
+. . . . .
+
+الخوارزمي!
+
+. . . . .
+
+الفاتح!
+
+. . . . .
+
+محمد الفاتح!
+
+. . . . .
+
+أحمد!
+
+. . . . .
+
+علي!
+
+. . . . .
+
+هادي!
+
+. . . . .
+
+محمد الخوارزمي!
+
+. . . . .
+
+حميد!
+
+. . . . .
+
+عبدو!
+
+. . . . .
+
+موسى!
+
+. . . . .
+
+جعفر!
+
+. . . . .
+
+حيدر!
+
+. . . . .
+
+بوفارس!
+
+. . . . .
+
+زينب!
+
+. . . . .
+
+فاطمه!
+
+. . . . .
+
+رقيه!
+
+. . . . .
+
+رنا!</textarea>
+        </div>
+        <div class="card">
+          <h3>الدفعة 8 من 20 (25 مقطع) — احفظ الملف باسم: <code>batch_8.wav</code></h3>
+          <div class="ids">name_الفيزيائي, name_عمار, name_ياسمين, name_بوأحمد, name_عادل, name_بورنا, name_رضا, name_غسان, name_عبدالحميد, name_ماما, name_بابا, name_سليل, name_منتظر, name_عبدالله, name_عبود, name_صالح, name_ممدوح, name_مجتبى, name_كوثر, name_زهراء, name_بوعباس, name_بوزينب, name_منصور, name_سجاد, name_م_ر_س_ال</div>
+          <div class="row">
+            <button onclick="copyText('style_8', this)">1. نسخ Style Instructions</button>
+            <input id="style_8" value="announcing a player's name, proud and excited, loud" readonly>
+          </div>
+          <div class="row">
+            <button onclick="copyText('text_8', this)">2. نسخ نص الدفعة (25 جملة)</button>
+          </div>
+          <textarea id="text_8" rows="6" readonly>الفيزيائي!
+
+. . . . .
+
+عمار!
+
+. . . . .
+
+ياسمين!
+
+. . . . .
+
+بوأحمد!
+
+. . . . .
+
+عادل!
+
+. . . . .
+
+بورنا!
+
+. . . . .
+
+رضا!
+
+. . . . .
+
+غسان!
+
+. . . . .
+
+عبدالحميد!
+
+. . . . .
+
+ماما!
+
+. . . . .
+
+بابا!
+
+. . . . .
+
+سليل!
+
+. . . . .
+
+منتظر!
+
+. . . . .
+
+عبدالله!
+
+. . . . .
+
+عبود!
+
+. . . . .
+
+صالح!
+
+. . . . .
+
+ممدوح!
+
+. . . . .
+
+مجتبى!
+
+. . . . .
+
+كوثر!
+
+. . . . .
+
+زهراء!
+
+. . . . .
+
+بوعباس!
+
+. . . . .
+
+بوزينب!
+
+. . . . .
+
+منصور!
+
+. . . . .
+
+سجاد!
+
+. . . . .
+
+مِرْسَال!</textarea>
+        </div>
+        <div class="card">
+          <h3>الدفعة 9 من 20 (25 مقطع) — احفظ الملف باسم: <code>batch_9.wav</code></h3>
+          <div class="ids">name_محسن, name_الفريق_الأول, name_الفريق_الثاني, name_الفريق_الثالث, name_الفريق_الرابع, name_الهلال, name_النصر, name_الإتحاد, name_الأهلي, name_الفتح, name_برشلونه, name_ريال_مدريد, name_ناصر, name_ياسين, name_يوسف, name_غالب, name_يونس, name_مهدي, name_عبدالرحيم, name_ري_ان, name_سلطان, name_جهاد, name_أنور, name_الحسن, name_جواد</div>
+          <div class="row">
+            <button onclick="copyText('style_9', this)">1. نسخ Style Instructions</button>
+            <input id="style_9" value="announcing a player's name, proud and excited, loud" readonly>
+          </div>
+          <div class="row">
+            <button onclick="copyText('text_9', this)">2. نسخ نص الدفعة (25 جملة)</button>
+          </div>
+          <textarea id="text_9" rows="6" readonly>محسن!
+
+. . . . .
+
+الفريق الأول!
+
+. . . . .
+
+الفريق الثاني!
+
+. . . . .
+
+الفريق الثالث!
+
+. . . . .
+
+الفريق الرابع!
+
+. . . . .
+
+الهلال!
+
+. . . . .
+
+النصر!
+
+. . . . .
+
+الإتحاد!
+
+. . . . .
+
+الأهلي!
+
+. . . . .
+
+الفتح!
+
+. . . . .
+
+برشلونه!
+
+. . . . .
+
+ريال مدريد!
+
+. . . . .
+
+ناصر!
+
+. . . . .
+
+ياسين!
+
+. . . . .
+
+يوسف!
+
+. . . . .
+
+غالب!
+
+. . . . .
+
+يونس!
+
+. . . . .
+
+مهدي!
+
+. . . . .
+
+عبدالرحيم!
+
+. . . . .
+
+ريَّان!
+
+. . . . .
+
+سلطان!
+
+. . . . .
+
+جهاد!
+
+. . . . .
+
+أنور!
+
+. . . . .
+
+الحسن!
+
+. . . . .
+
+جواد!</textarea>
+        </div>
+        <div class="card">
+          <h3>الدفعة 10 من 20 (25 مقطع) — احفظ الملف باسم: <code>batch_10.wav</code></h3>
+          <div class="ids">name_زكريا, name_عبدالرحمن, name_عيسى, name_كاظم, name_عبدالعزيز, name_عمار, name_غيث, name_فارس, name_كرار, name_قاسم, name_كميل, name_عبدالهادي, name_أياد, name_إياد, name_مسلم, name_خليفة, name_راضي, name_طاهر, name_سعد, name_صالح, name_رضا, name_جابر, name_ليث, name_طه, name_إبراهيم</div>
+          <div class="row">
+            <button onclick="copyText('style_10', this)">1. نسخ Style Instructions</button>
+            <input id="style_10" value="announcing a player's name, proud and excited, loud" readonly>
+          </div>
+          <div class="row">
+            <button onclick="copyText('text_10', this)">2. نسخ نص الدفعة (25 جملة)</button>
+          </div>
+          <textarea id="text_10" rows="6" readonly>زكريا!
+
+. . . . .
+
+عبدالرحمن!
+
+. . . . .
+
+عيسى!
+
+. . . . .
+
+كاظم!
+
+. . . . .
+
+عبدالعزيز!
+
+. . . . .
+
+عمار!
+
+. . . . .
+
+غيث!
+
+. . . . .
+
+فارس!
+
+. . . . .
+
+كرار!
+
+. . . . .
+
+قاسم!
+
+. . . . .
+
+كميل!
+
+. . . . .
+
+عبدالهادي!
+
+. . . . .
+
+أياد!
+
+. . . . .
+
+إياد!
+
+. . . . .
+
+مسلم!
+
+. . . . .
+
+خليفة!
+
+. . . . .
+
+راضي!
+
+. . . . .
+
+طاهر!
+
+. . . . .
+
+سعد!
+
+. . . . .
+
+صالح!
+
+. . . . .
+
+رضا!
+
+. . . . .
+
+جابر!
+
+. . . . .
+
+ليث!
+
+. . . . .
+
+طه!
+
+. . . . .
+
+إبراهيم!</textarea>
+        </div>
+        <div class="card">
+          <h3>الدفعة 11 من 20 (25 مقطع) — احفظ الملف باسم: <code>batch_11.wav</code></h3>
+          <div class="ids">name_مصطفى, name_عدنان, name_عبدالعظيم, name_سالم, name_جاسم, name_حمد, name_حبيب, name_علي_الحليمي, name_حبيب_الشويش, name_منصور_الناظري, name_حسين_البوحسن, name_محمد_الشقاق, name_حسين_البريه, name_عبدالله_العلي, name_محمد_المطر, name_حيدر_بوحسن, name_علي_السلمان, name_محمد_الفايز, name_أحمد_البوحسن, name_حسن_البوحسن, name_عبدالله_السبيعي, name_أحمد_الجاسم, name_محسن_المحسن, name_الأشتر, name_عبدالله_المويل</div>
+          <div class="row">
+            <button onclick="copyText('style_11', this)">1. نسخ Style Instructions</button>
+            <input id="style_11" value="announcing a player's name, proud and excited, loud" readonly>
+          </div>
+          <div class="row">
+            <button onclick="copyText('text_11', this)">2. نسخ نص الدفعة (25 جملة)</button>
+          </div>
+          <textarea id="text_11" rows="6" readonly>مصطفى!
+
+. . . . .
+
+عدنان!
+
+. . . . .
+
+عبدالعظيم!
+
+. . . . .
+
+سالم!
+
+. . . . .
+
+جاسم!
+
+. . . . .
+
+حمد!
+
+. . . . .
+
+حبيب!
+
+. . . . .
+
+علي الحليمي!
+
+. . . . .
+
+حبيب الشويش!
+
+. . . . .
+
+منصور الناظري!
+
+. . . . .
+
+حسين البوحسن!
+
+. . . . .
+
+محمد الشقاق!
+
+. . . . .
+
+حسين البريه!
+
+. . . . .
+
+عبدالله العلي!
+
+. . . . .
+
+محمد المطر!
+
+. . . . .
+
+حيدر بوحسن!
+
+. . . . .
+
+علي السلمان!
+
+. . . . .
+
+محمد الفايز!
+
+. . . . .
+
+أحمد البوحسن!
+
+. . . . .
+
+حسن البوحسن!
+
+. . . . .
+
+عبدالله السبيعي!
+
+. . . . .
+
+أحمد الجاسم!
+
+. . . . .
+
+محسن المحسن!
+
+. . . . .
+
+الأشتر!
+
+. . . . .
+
+عبدالله المويل!</textarea>
+        </div>
+        <div class="card">
+          <h3>الدفعة 12 من 20 (25 مقطع) — احفظ الملف باسم: <code>batch_12.wav</code></h3>
+          <div class="ids">name_حسين_العليوي, name_حسن_الشويش, name_محمد_مصطفى_الفايز, name_سجاد_الحمود, name_علي_البر_اك, name_موسى_الحمد, name_حسن_الأحمد, name_محمد_حسن_الجابر, name_عباس_المحمد, name_سعيد, name_سامي, name_جلال, name_عبد_الكريم, name_عيد, name_عبدالرزاق, name_عبدالفتاح, name_الأسد, name_النمر, name_الأسود, name_النمور, name_فجر, name_أباذر, name_سلوى, name_سهام, name_داوود</div>
+          <div class="row">
+            <button onclick="copyText('style_12', this)">1. نسخ Style Instructions</button>
+            <input id="style_12" value="announcing a player's name, proud and excited, loud" readonly>
+          </div>
+          <div class="row">
+            <button onclick="copyText('text_12', this)">2. نسخ نص الدفعة (25 جملة)</button>
+          </div>
+          <textarea id="text_12" rows="6" readonly>حسين العليوي!
+
+. . . . .
+
+حسن الشويش!
+
+. . . . .
+
+محمد مصطفى الفايز!
+
+. . . . .
+
+سجاد الحمود!
+
+. . . . .
+
+علي البرَّاك!
+
+. . . . .
+
+موسى الحمد!
+
+. . . . .
+
+حسن الأحمد!
+
+. . . . .
+
+محمد حسن الجابر!
+
+. . . . .
+
+عباس المحمد!
+
+. . . . .
+
+سعيد!
+
+. . . . .
+
+سامي!
+
+. . . . .
+
+جلال!
+
+. . . . .
+
+عبد الكريم!
+
+. . . . .
+
+عيد!
+
+. . . . .
+
+عبدالرزاق!
+
+. . . . .
+
+عبدالفتاح!
+
+. . . . .
+
+الأسد!
+
+. . . . .
+
+النمر!
+
+. . . . .
+
+الأسود!
+
+. . . . .
+
+النمور!
+
+. . . . .
+
+فجر!
+
+. . . . .
+
+أباذر!
+
+. . . . .
+
+سلوى!
+
+. . . . .
+
+سهام!
+
+. . . . .
+
+داوود!</textarea>
+        </div>
+        <div class="card">
+          <h3>الدفعة 13 من 20 (25 مقطع) — احفظ الملف باسم: <code>batch_13.wav</code></h3>
+          <div class="ids">name_ابتسام, name_شهد, name_هاشم, name_ضياء, name_كيان, name_ساجده, name_عمران, name_غريب, name_مريم, name_سهيله, name_أشواق, name_وفاء, name_إزدهار, name_سلمى, name_حنين, name_فجر, name_سحر, name_جنى, name_زكيه, name_رحمه, name_شروق, name_بيان, name_حميده, name_دعاء, name_غاليه</div>
+          <div class="row">
+            <button onclick="copyText('style_13', this)">1. نسخ Style Instructions</button>
+            <input id="style_13" value="announcing a player's name, proud and excited, loud" readonly>
+          </div>
+          <div class="row">
+            <button onclick="copyText('text_13', this)">2. نسخ نص الدفعة (25 جملة)</button>
+          </div>
+          <textarea id="text_13" rows="6" readonly>ابتسام!
+
+. . . . .
+
+شهد!
+
+. . . . .
+
+هاشم!
+
+. . . . .
+
+ضياء!
+
+. . . . .
+
+كيان!
+
+. . . . .
+
+ساجده!
+
+. . . . .
+
+عمران!
+
+. . . . .
+
+غريب!
+
+. . . . .
+
+مريم!
+
+. . . . .
+
+سهيله!
+
+. . . . .
+
+أشواق!
+
+. . . . .
+
+وفاء!
+
+. . . . .
+
+إزدهار!
+
+. . . . .
+
+سلمى!
+
+. . . . .
+
+حنين!
+
+. . . . .
+
+فجر!
+
+. . . . .
+
+سحر!
+
+. . . . .
+
+جنى!
+
+. . . . .
+
+زكيه!
+
+. . . . .
+
+رحمه!
+
+. . . . .
+
+شروق!
+
+. . . . .
+
+بيان!
+
+. . . . .
+
+حميده!
+
+. . . . .
+
+دعاء!
+
+. . . . .
+
+غاليه!</textarea>
+        </div>
+        <div class="card">
+          <h3>الدفعة 14 من 20 (25 مقطع) — احفظ الملف باسم: <code>batch_14.wav</code></h3>
+          <div class="ids">name_علياء, name_لمياء, name_جمعه, name_نوح, name_طالب, name_فاضل, name_عباس, name_أفراح, name_الحسين, name_باقر, name_صادق, name_عارف, name_شاكر, name_غدير, name_أمينه, name_جميله, name_منال, name_وليد, name_عبير, name_بلقيس, name_حوراء, name_إسماعيل, name_لميعه, name_نوره, name_بتول</div>
+          <div class="row">
+            <button onclick="copyText('style_14', this)">1. نسخ Style Instructions</button>
+            <input id="style_14" value="announcing a player's name, proud and excited, loud" readonly>
+          </div>
+          <div class="row">
+            <button onclick="copyText('text_14', this)">2. نسخ نص الدفعة (25 جملة)</button>
+          </div>
+          <textarea id="text_14" rows="6" readonly>علياء!
+
+. . . . .
+
+لمياء!
+
+. . . . .
+
+جمعه!
+
+. . . . .
+
+نوح!
+
+. . . . .
+
+طالب!
+
+. . . . .
+
+فاضل!
+
+. . . . .
+
+عباس!
+
+. . . . .
+
+أفراح!
+
+. . . . .
+
+الحسين!
+
+. . . . .
+
+باقر!
+
+. . . . .
+
+صادق!
+
+. . . . .
+
+عارف!
+
+. . . . .
+
+شاكر!
+
+. . . . .
+
+غدير!
+
+. . . . .
+
+أمينه!
+
+. . . . .
+
+جميله!
+
+. . . . .
+
+منال!
+
+. . . . .
+
+وليد!
+
+. . . . .
+
+عبير!
+
+. . . . .
+
+بلقيس!
+
+. . . . .
+
+حوراء!
+
+. . . . .
+
+إسماعيل!
+
+. . . . .
+
+لميعه!
+
+. . . . .
+
+نوره!
+
+. . . . .
+
+بتول!</textarea>
+        </div>
+        <div class="card">
+          <h3>الدفعة 15 من 20 (25 مقطع) — احفظ الملف باسم: <code>batch_15.wav</code></h3>
+          <div class="ids">name_هاجر, name_خالد, name_خلف, name_بنين, name_رباب, name_حجي, name_بدر, name_دانيال, name_سفر, name_مناحي, name_مجاهد, name_زيد, name_مكي, name_غياث, name_أسماء, name_كمال, name_قمر, name_فواز, name_ماجد, name_وداد, name_سعاد, name_غاده, name_رامي, name_مها, name_خديجه</div>
+          <div class="row">
+            <button onclick="copyText('style_15', this)">1. نسخ Style Instructions</button>
+            <input id="style_15" value="announcing a player's name, proud and excited, loud" readonly>
+          </div>
+          <div class="row">
+            <button onclick="copyText('text_15', this)">2. نسخ نص الدفعة (25 جملة)</button>
+          </div>
+          <textarea id="text_15" rows="6" readonly>هاجر!
+
+. . . . .
+
+خالد!
+
+. . . . .
+
+خلف!
+
+. . . . .
+
+بنين!
+
+. . . . .
+
+رباب!
+
+. . . . .
+
+حجي!
+
+. . . . .
+
+بدر!
+
+. . . . .
+
+دانيال!
+
+. . . . .
+
+سفر!
+
+. . . . .
+
+مناحي!
+
+. . . . .
+
+مجاهد!
+
+. . . . .
+
+زيد!
+
+. . . . .
+
+مكي!
+
+. . . . .
+
+غياث!
+
+. . . . .
+
+أسماء!
+
+. . . . .
+
+كمال!
+
+. . . . .
+
+قمر!
+
+. . . . .
+
+فواز!
+
+. . . . .
+
+ماجد!
+
+. . . . .
+
+وداد!
+
+. . . . .
+
+سعاد!
+
+. . . . .
+
+غاده!
+
+. . . . .
+
+رامي!
+
+. . . . .
+
+مها!
+
+. . . . .
+
+خديجه!</textarea>
+        </div>
+        <div class="card">
+          <h3>الدفعة 16 من 20 (15 مقطع) — احفظ الملف باسم: <code>batch_16.wav</code></h3>
+          <div class="ids">name_سعيده, name_عبداللطيف, name_عبدالوهاب, name_وهب, name_أسيل, name_زياد, name_شيماء, name_خضر, name_سلمان, name_فهد, name_مبارك, name_هيازع, name_سعود, name_نور, name_تركي</div>
+          <div class="row">
+            <button onclick="copyText('style_16', this)">1. نسخ Style Instructions</button>
+            <input id="style_16" value="announcing a player's name, proud and excited, loud" readonly>
+          </div>
+          <div class="row">
+            <button onclick="copyText('text_16', this)">2. نسخ نص الدفعة (15 جملة)</button>
+          </div>
+          <textarea id="text_16" rows="6" readonly>سعيده!
+
+. . . . .
+
+عبداللطيف!
+
+. . . . .
+
+عبدالوهاب!
+
+. . . . .
+
+وهب!
+
+. . . . .
+
+أسيل!
+
+. . . . .
+
+زياد!
+
+. . . . .
+
+شيماء!
+
+. . . . .
+
+خضر!
+
+. . . . .
+
+سلمان!
+
+. . . . .
+
+فهد!
+
+. . . . .
+
+مبارك!
+
+. . . . .
+
+هيازع!
+
+. . . . .
+
+سعود!
+
+. . . . .
+
+نور!
+
+. . . . .
+
+تركي!</textarea>
+        </div>
+        <div class="card">
+          <h3>الدفعة 17 من 20 (25 مقطع) — احفظ الملف باسم: <code>batch_17.wav</code></h3>
+          <div class="ids">n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14, n15, n16, n17, n18, n19, n20, n21, n22, n23, n24, n25</div>
+          <div class="row">
+            <button onclick="copyText('style_17', this)">1. نسخ Style Instructions</button>
+            <input id="style_17" value="calling out a number with excitement, crisp and clear, loud" readonly>
+          </div>
+          <div class="row">
+            <button onclick="copyText('text_17', this)">2. نسخ نص الدفعة (25 جملة)</button>
+          </div>
+          <textarea id="text_17" rows="6" readonly>واحد!
+
+. . . . .
+
+اثنان!
+
+. . . . .
+
+ثلاثة!
+
+. . . . .
+
+أربعة!
+
+. . . . .
+
+خمسة!
+
+. . . . .
+
+ستة!
+
+. . . . .
+
+سبعة!
+
+. . . . .
+
+ثمانية!
+
+. . . . .
+
+تسعة!
+
+. . . . .
+
+عشرة!
+
+. . . . .
+
+أحد عشر!
+
+. . . . .
+
+اثنا عشر!
+
+. . . . .
+
+ثلاثة عشر!
+
+. . . . .
+
+أربعة عشر!
+
+. . . . .
+
+خمسة عشر!
+
+. . . . .
+
+ستة عشر!
+
+. . . . .
+
+سبعة عشر!
+
+. . . . .
+
+ثمانية عشر!
+
+. . . . .
+
+تسعة عشر!
+
+. . . . .
+
+عشرون!
+
+. . . . .
+
+واحد وعشرون!
+
+. . . . .
+
+اثنان وعشرون!
+
+. . . . .
+
+ثلاثة وعشرون!
+
+. . . . .
+
+أربعة وعشرون!
+
+. . . . .
+
+خمسة وعشرون!</textarea>
+        </div>
+        <div class="card">
+          <h3>الدفعة 18 من 20 (25 مقطع) — احفظ الملف باسم: <code>batch_18.wav</code></h3>
+          <div class="ids">n26, n27, n28, n29, n30, n31, n32, n33, n34, n35, n36, n37, n38, n39, n40, n41, n42, n43, n44, n45, n46, n47, n48, n49, n50</div>
+          <div class="row">
+            <button onclick="copyText('style_18', this)">1. نسخ Style Instructions</button>
+            <input id="style_18" value="calling out a number with excitement, crisp and clear, loud" readonly>
+          </div>
+          <div class="row">
+            <button onclick="copyText('text_18', this)">2. نسخ نص الدفعة (25 جملة)</button>
+          </div>
+          <textarea id="text_18" rows="6" readonly>ستة وعشرون!
+
+. . . . .
+
+سبعة وعشرون!
+
+. . . . .
+
+ثمانية وعشرون!
+
+. . . . .
+
+تسعة وعشرون!
+
+. . . . .
+
+ثلاثون!
+
+. . . . .
+
+واحد وثلاثون!
+
+. . . . .
+
+اثنان وثلاثون!
+
+. . . . .
+
+ثلاثة وثلاثون!
+
+. . . . .
+
+أربعة وثلاثون!
+
+. . . . .
+
+خمسة وثلاثون!
+
+. . . . .
+
+ستة وثلاثون!
+
+. . . . .
+
+سبعة وثلاثون!
+
+. . . . .
+
+ثمانية وثلاثون!
+
+. . . . .
+
+تسعة وثلاثون!
+
+. . . . .
+
+أربعون!
+
+. . . . .
+
+واحد وأربعون!
+
+. . . . .
+
+اثنان وأربعون!
+
+. . . . .
+
+ثلاثة وأربعون!
+
+. . . . .
+
+أربعة وأربعون!
+
+. . . . .
+
+خمسة وأربعون!
+
+. . . . .
+
+ستة وأربعون!
+
+. . . . .
+
+سبعة وأربعون!
+
+. . . . .
+
+ثمانية وأربعون!
+
+. . . . .
+
+تسعة وأربعون!
+
+. . . . .
+
+خمسون!</textarea>
+        </div>
+        <div class="card">
+          <h3>الدفعة 19 من 20 (25 مقطع) — احفظ الملف باسم: <code>batch_19.wav</code></h3>
+          <div class="ids">n51, n52, n53, n54, n55, n56, n57, n58, n59, n60, n61, n62, n63, n64, n65, n66, n67, n68, n69, n70, n71, n72, n73, n74, n75</div>
+          <div class="row">
+            <button onclick="copyText('style_19', this)">1. نسخ Style Instructions</button>
+            <input id="style_19" value="calling out a number with excitement, crisp and clear, loud" readonly>
+          </div>
+          <div class="row">
+            <button onclick="copyText('text_19', this)">2. نسخ نص الدفعة (25 جملة)</button>
+          </div>
+          <textarea id="text_19" rows="6" readonly>واحد وخمسون!
+
+. . . . .
+
+اثنان وخمسون!
+
+. . . . .
+
+ثلاثة وخمسون!
+
+. . . . .
+
+أربعة وخمسون!
+
+. . . . .
+
+خمسة وخمسون!
+
+. . . . .
+
+ستة وخمسون!
+
+. . . . .
+
+سبعة وخمسون!
+
+. . . . .
+
+ثمانية وخمسون!
+
+. . . . .
+
+تسعة وخمسون!
+
+. . . . .
+
+ستون!
+
+. . . . .
+
+واحد وستون!
+
+. . . . .
+
+اثنان وستون!
+
+. . . . .
+
+ثلاثة وستون!
+
+. . . . .
+
+أربعة وستون!
+
+. . . . .
+
+خمسة وستون!
+
+. . . . .
+
+ستة وستون!
+
+. . . . .
+
+سبعة وستون!
+
+. . . . .
+
+ثمانية وستون!
+
+. . . . .
+
+تسعة وستون!
+
+. . . . .
+
+سبعون!
+
+. . . . .
+
+واحد وسبعون!
+
+. . . . .
+
+اثنان وسبعون!
+
+. . . . .
+
+ثلاثة وسبعون!
+
+. . . . .
+
+أربعة وسبعون!
+
+. . . . .
+
+خمسة وسبعون!</textarea>
+        </div>
+        <div class="card">
+          <h3>الدفعة 20 من 20 (25 مقطع) — احفظ الملف باسم: <code>batch_20.wav</code></h3>
+          <div class="ids">n76, n77, n78, n79, n80, n81, n82, n83, n84, n85, n86, n87, n88, n89, n90, n91, n92, n93, n94, n95, n96, n97, n98, n99, n100</div>
+          <div class="row">
+            <button onclick="copyText('style_20', this)">1. نسخ Style Instructions</button>
+            <input id="style_20" value="calling out a number with excitement, crisp and clear, loud" readonly>
+          </div>
+          <div class="row">
+            <button onclick="copyText('text_20', this)">2. نسخ نص الدفعة (25 جملة)</button>
+          </div>
+          <textarea id="text_20" rows="6" readonly>ستة وسبعون!
+
+. . . . .
+
+سبعة وسبعون!
+
+. . . . .
+
+ثمانية وسبعون!
+
+. . . . .
+
+تسعة وسبعون!
+
+. . . . .
+
+ثمانون!
+
+. . . . .
+
+واحد وثمانون!
+
+. . . . .
+
+اثنان وثمانون!
+
+. . . . .
+
+ثلاثة وثمانون!
+
+. . . . .
+
+أربعة وثمانون!
+
+. . . . .
+
+خمسة وثمانون!
+
+. . . . .
+
+ستة وثمانون!
+
+. . . . .
+
+سبعة وثمانون!
+
+. . . . .
+
+ثمانية وثمانون!
+
+. . . . .
+
+تسعة وثمانون!
+
+. . . . .
+
+تسعون!
+
+. . . . .
+
+واحد وتسعون!
+
+. . . . .
+
+اثنان وتسعون!
+
+. . . . .
+
+ثلاثة وتسعون!
+
+. . . . .
+
+أربعة وتسعون!
+
+. . . . .
+
+خمسة وتسعون!
+
+. . . . .
+
+ستة وتسعون!
+
+. . . . .
+
+سبعة وتسعون!
+
+. . . . .
+
+ثمانية وتسعون!
+
+. . . . .
+
+تسعة وتسعون!
+
+. . . . .
+
+مئة!</textarea>
+        </div>
+    <script>
+      function copyText(id, btn){
+        const el=document.getElementById(id);
+        navigator.clipboard.writeText(el.value);
+        const old=btn.textContent; btn.textContent='✓ تم النسخ!'; btn.classList.add('done');
+        setTimeout(()=>{btn.textContent=old;btn.classList.remove('done')},1800);
+      }
+    </script></body></html>

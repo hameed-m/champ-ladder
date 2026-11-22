@@ -1,0 +1,2468 @@
+[
+  {
+    "index": 1,
+    "style": "excited and warm, big smile, energetic but clear",
+    "items": [
+      {
+        "id": "welcome_0",
+        "text": "أهلًا وسهلًا بكم في الملعب! الأجواء نار، وعلى بركة الله تبدأ المباراة!",
+        "style": "excited and warm, big smile, energetic but clear",
+        "name": null
+      },
+      {
+        "id": "card_0",
+        "text": "بطاقة قوة جديدة!",
+        "style": "excited and warm, big smile, energetic but clear",
+        "name": null
+      },
+      {
+        "id": "card_1",
+        "text": "حصل على بطاقة! الأمور بتحلو!",
+        "style": "excited and warm, big smile, energetic but clear",
+        "name": null
+      },
+      {
+        "id": "swap_0",
+        "text": "تبديل السؤال! فرصة جديدة!",
+        "style": "excited and warm, big smile, energetic but clear",
+        "name": null
+      },
+      {
+        "id": "surprise_0",
+        "text": "مفاجأة! ماذا يوجد في الصندوق؟",
+        "style": "excited and warm, big smile, energetic but clear",
+        "name": null
+      }
+    ]
+  },
+  {
+    "index": 2,
+    "style": "rising suspense, quick, building excitement",
+    "items": [
+      {
+        "id": "roll_0",
+        "text": "يرمي النرد!",
+        "style": "rising suspense, quick, building excitement",
+        "name": null
+      },
+      {
+        "id": "roll_1",
+        "text": "والنرد يتدحرج... كم بيطلع؟",
+        "style": "rising suspense, quick, building excitement",
+        "name": null
+      },
+      {
+        "id": "roll_2",
+        "text": "استعد! النرد في الهواء!",
+        "style": "rising suspense, quick, building excitement",
+        "name": null
+      },
+      {
+        "id": "move_0",
+        "text": "يتقدم إلى الخانة",
+        "style": "rising suspense, quick, building excitement",
+        "name": null
+      },
+      {
+        "id": "move_1",
+        "text": "تمريرة رائعة، إلى الخانة",
+        "style": "rising suspense, quick, building excitement",
+        "name": null
+      },
+      {
+        "id": "move_2",
+        "text": "ينطلق إلى الخانة",
+        "style": "rising suspense, quick, building excitement",
+        "name": null
+      }
+    ]
+  },
+  {
+    "index": 3,
+    "style": "electrifying live football commentary, shouting with joy, fast and breathless",
+    "items": [
+      {
+        "id": "correct_0",
+        "text": "إجابة صحيحة! يا سلام يا سلام!",
+        "style": "electrifying live football commentary, shouting with joy, fast and breathless",
+        "name": null
+      },
+      {
+        "id": "correct_1",
+        "text": "رائع! رائع! رائع!",
+        "style": "electrifying live football commentary, shouting with joy, fast and breathless",
+        "name": null
+      },
+      {
+        "id": "correct_2",
+        "text": "تسديدة قوية... في الشباك!",
+        "style": "electrifying live football commentary, shouting with joy, fast and breathless",
+        "name": null
+      },
+      {
+        "id": "correct_3",
+        "text": "ما شاء الله! إجابة دقيقة!",
+        "style": "electrifying live football commentary, shouting with joy, fast and breathless",
+        "name": null
+      },
+      {
+        "id": "correct_4",
+        "text": "نعم! نعم! هذا هو الجواب!",
+        "style": "electrifying live football commentary, shouting with joy, fast and breathless",
+        "name": null
+      },
+      {
+        "id": "correct_5",
+        "text": "وين رايحة؟! مباشرة في الهدف!",
+        "style": "electrifying live football commentary, shouting with joy, fast and breathless",
+        "name": null
+      },
+      {
+        "id": "correct_6",
+        "text": "يا سلام عليك! لعب كبير!",
+        "style": "electrifying live football commentary, shouting with joy, fast and breathless",
+        "name": null
+      },
+      {
+        "id": "fast_0",
+        "text": "بسرعة البرق! يا سلام!",
+        "style": "electrifying live football commentary, shouting with joy, fast and breathless",
+        "name": null
+      },
+      {
+        "id": "fast_1",
+        "text": "ما هذه السرعة؟! مذهل!",
+        "style": "electrifying live football commentary, shouting with joy, fast and breathless",
+        "name": null
+      },
+      {
+        "id": "fast_2",
+        "text": "ما لحقنا نشوف الإجابة! ما شاء الله!",
+        "style": "electrifying live football commentary, shouting with joy, fast and breathless",
+        "name": null
+      },
+      {
+        "id": "streak_0",
+        "text": "سلسلة نارية! الجمهور يشتعل!",
+        "style": "electrifying live football commentary, shouting with joy, fast and breathless",
+        "name": null
+      },
+      {
+        "id": "streak_1",
+        "text": "لا أحد يوقف هذا البطل!",
+        "style": "electrifying live football commentary, shouting with joy, fast and breathless",
+        "name": null
+      },
+      {
+        "id": "streak_2",
+        "text": "ثلاثة ورا بعض! يا سلام!",
+        "style": "electrifying live football commentary, shouting with joy, fast and breathless",
+        "name": null
+      },
+      {
+        "id": "ladder_0",
+        "text": "سلّم! صعود صاروخي إلى الخانة",
+        "style": "electrifying live football commentary, shouting with joy, fast and breathless",
+        "name": null
+      },
+      {
+        "id": "ladder_1",
+        "text": "يا سلام! يصعد السلّم إلى الخانة",
+        "style": "electrifying live football commentary, shouting with joy, fast and breathless",
+        "name": null
+      },
+      {
+        "id": "win_0",
+        "text": "هدف! هدف! هدف! قووووول! ألف مبروك يا بطل!",
+        "style": "electrifying live football commentary, shouting with joy, fast and breathless",
+        "name": null
+      },
+      {
+        "id": "win_1",
+        "text": "انتهت المباراة! فوز عظيم! مبروك مبروك مبروك!",
+        "style": "electrifying live football commentary, shouting with joy, fast and breathless",
+        "name": null
+      },
+      {
+        "id": "allwin_0",
+        "text": "أسرع إجابة في الملعب! الجائزة له!",
+        "style": "electrifying live football commentary, shouting with joy, fast and breathless",
+        "name": null
+      },
+      {
+        "id": "allwin_1",
+        "text": "خطف الجائزة! يا سلام!",
+        "style": "electrifying live football commentary, shouting with joy, fast and breathless",
+        "name": null
+      },
+      {
+        "id": "stolen_0",
+        "text": "خطفها! يا سلام عليه!",
+        "style": "electrifying live football commentary, shouting with joy, fast and breathless",
+        "name": null
+      },
+      {
+        "id": "stolen_1",
+        "text": "سرقة نظيفة! ما شاء الله!",
+        "style": "electrifying live football commentary, shouting with joy, fast and breathless",
+        "name": null
+      },
+      {
+        "id": "penwin_0",
+        "text": "في الشباك! فاز بالمواجهة!",
+        "style": "electrifying live football commentary, shouting with joy, fast and breathless",
+        "name": null
+      },
+      {
+        "id": "penwin_1",
+        "text": "انتصر في ضربة الجزاء! يا سلام!",
+        "style": "electrifying live football commentary, shouting with joy, fast and breathless",
+        "name": null
+      },
+      {
+        "id": "shield_0",
+        "text": "الدرع ينقذه من الحية! يا سلام!",
+        "style": "electrifying live football commentary, shouting with joy, fast and breathless",
+        "name": null
+      }
+    ]
+  },
+  {
+    "index": 4,
+    "style": "crushed disappointment, a loud groan, then sympathetic",
+    "items": [
+      {
+        "id": "wrong_0",
+        "text": "<gasp> الكرة خارج المرمى!",
+        "style": "crushed disappointment, a loud groan, then sympathetic",
+        "name": null
+      },
+      {
+        "id": "wrong_1",
+        "text": "يا خسارة! كادت أن تدخل!",
+        "style": "crushed disappointment, a loud groan, then sympathetic",
+        "name": null
+      },
+      {
+        "id": "wrong_2",
+        "text": "فرصة ضائعة... لا بأس، حاول مرة أخرى!",
+        "style": "crushed disappointment, a loud groan, then sympathetic",
+        "name": null
+      },
+      {
+        "id": "wrong_3",
+        "text": "أوووه! قريبة، قريبة مرة!",
+        "style": "crushed disappointment, a loud groan, then sympathetic",
+        "name": null
+      },
+      {
+        "id": "timeout_0",
+        "text": "انتهى الوقت! الحكم يطلق الصافرة!",
+        "style": "crushed disappointment, a loud groan, then sympathetic",
+        "name": null
+      },
+      {
+        "id": "timeout_1",
+        "text": "الوقت راح! يا خسارة!",
+        "style": "crushed disappointment, a loud groan, then sympathetic",
+        "name": null
+      }
+    ]
+  },
+  {
+    "index": 5,
+    "style": "dramatic shock, gasping, loud",
+    "items": [
+      {
+        "id": "snake_0",
+        "text": "<gasp> يا للهول! الحية! هبوط إلى الخانة",
+        "style": "dramatic shock, gasping, loud",
+        "name": null
+      },
+      {
+        "id": "snake_1",
+        "text": "يا لها من لحظة صعبة! الحية تنزله إلى الخانة",
+        "style": "dramatic shock, gasping, loud",
+        "name": null
+      }
+    ]
+  },
+  {
+    "index": 6,
+    "style": "urgent announcement, loud, fast, thrilling",
+    "items": [
+      {
+        "id": "all_0",
+        "text": "سؤال للجميع! الأسرع يفوز!",
+        "style": "urgent announcement, loud, fast, thrilling",
+        "name": null
+      },
+      {
+        "id": "all_1",
+        "text": "انتبهوا كلكم! من يجيب أولًا؟",
+        "style": "urgent announcement, loud, fast, thrilling",
+        "name": null
+      },
+      {
+        "id": "steal_0",
+        "text": "الفرصة مفتوحة! من يخطف الإجابة؟",
+        "style": "urgent announcement, loud, fast, thrilling",
+        "name": null
+      },
+      {
+        "id": "steal_1",
+        "text": "الكرة حرة! من يلحق؟",
+        "style": "urgent announcement, loud, fast, thrilling",
+        "name": null
+      },
+      {
+        "id": "penalty_0",
+        "text": "ضربة جزاء! مواجهة مباشرة بين لاعبين!",
+        "style": "urgent announcement, loud, fast, thrilling",
+        "name": null
+      },
+      {
+        "id": "penalty_1",
+        "text": "التقيا في الخانة نفسها! مواجهة!",
+        "style": "urgent announcement, loud, fast, thrilling",
+        "name": null
+      },
+      {
+        "id": "double_0",
+        "text": "نرد مضاعف! الخطوات بتزيد!",
+        "style": "urgent announcement, loud, fast, thrilling",
+        "name": null
+      },
+      {
+        "id": "freeze_0",
+        "text": "تجميد! اللاعب التالي وقته نصف!",
+        "style": "urgent announcement, loud, fast, thrilling",
+        "name": null
+      }
+    ]
+  },
+  {
+    "index": 7,
+    "style": "announcing a player's name, proud and excited, loud",
+    "items": [
+      {
+        "id": "p_1",
+        "text": "اللاعب رقم واحد",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": null
+      },
+      {
+        "id": "p_2",
+        "text": "اللاعب رقم اثنين",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": null
+      },
+      {
+        "id": "p_3",
+        "text": "اللاعب رقم ثلاثة",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": null
+      },
+      {
+        "id": "p_4",
+        "text": "اللاعب رقم أربعة",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": null
+      },
+      {
+        "id": "name_حسن",
+        "text": "حسن!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "حسن"
+      },
+      {
+        "id": "name_حسين",
+        "text": "حسين!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "حسين"
+      },
+      {
+        "id": "name_عباس",
+        "text": "عباس!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "عباس"
+      },
+      {
+        "id": "name_محمد",
+        "text": "محمد!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "محمد"
+      },
+      {
+        "id": "name_الخوارزمي",
+        "text": "الخوارزمي!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "الخوارزمي"
+      },
+      {
+        "id": "name_الفاتح",
+        "text": "الفاتح!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "الفاتح"
+      },
+      {
+        "id": "name_محمد_الفاتح",
+        "text": "محمد الفاتح!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "محمد الفاتح"
+      },
+      {
+        "id": "name_أحمد",
+        "text": "أحمد!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "أحمد"
+      },
+      {
+        "id": "name_علي",
+        "text": "علي!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "علي"
+      },
+      {
+        "id": "name_هادي",
+        "text": "هادي!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "هادي"
+      },
+      {
+        "id": "name_محمد_الخوارزمي",
+        "text": "محمد الخوارزمي!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "محمد الخوارزمي"
+      },
+      {
+        "id": "name_حميد",
+        "text": "حميد!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "حميد"
+      },
+      {
+        "id": "name_عبدو",
+        "text": "عبدو!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "عبدو"
+      },
+      {
+        "id": "name_موسى",
+        "text": "موسى!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "موسى"
+      },
+      {
+        "id": "name_جعفر",
+        "text": "جعفر!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "جعفر"
+      },
+      {
+        "id": "name_حيدر",
+        "text": "حيدر!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "حيدر"
+      },
+      {
+        "id": "name_بوفارس",
+        "text": "بوفارس!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "بوفارس"
+      },
+      {
+        "id": "name_زينب",
+        "text": "زينب!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "زينب"
+      },
+      {
+        "id": "name_فاطمه",
+        "text": "فاطمه!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "فاطمه"
+      },
+      {
+        "id": "name_رقيه",
+        "text": "رقيه!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "رقيه"
+      },
+      {
+        "id": "name_رنا",
+        "text": "رنا!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "رنا"
+      }
+    ]
+  },
+  {
+    "index": 8,
+    "style": "announcing a player's name, proud and excited, loud",
+    "items": [
+      {
+        "id": "name_الفيزيائي",
+        "text": "الفيزيائي!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "الفيزيائي"
+      },
+      {
+        "id": "name_عمار",
+        "text": "عمار!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "عمار"
+      },
+      {
+        "id": "name_ياسمين",
+        "text": "ياسمين!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "ياسمين"
+      },
+      {
+        "id": "name_بوأحمد",
+        "text": "بوأحمد!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "بوأحمد"
+      },
+      {
+        "id": "name_عادل",
+        "text": "عادل!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "عادل"
+      },
+      {
+        "id": "name_بورنا",
+        "text": "بورنا!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "بورنا"
+      },
+      {
+        "id": "name_رضا",
+        "text": "رضا!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "رضا"
+      },
+      {
+        "id": "name_غسان",
+        "text": "غسان!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "غسان"
+      },
+      {
+        "id": "name_عبدالحميد",
+        "text": "عبدالحميد!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "عبدالحميد"
+      },
+      {
+        "id": "name_ماما",
+        "text": "ماما!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "ماما"
+      },
+      {
+        "id": "name_بابا",
+        "text": "بابا!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "بابا"
+      },
+      {
+        "id": "name_سليل",
+        "text": "سليل!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "سليل"
+      },
+      {
+        "id": "name_منتظر",
+        "text": "منتظر!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "منتظر"
+      },
+      {
+        "id": "name_عبدالله",
+        "text": "عبدالله!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "عبدالله"
+      },
+      {
+        "id": "name_عبود",
+        "text": "عبود!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "عبود"
+      },
+      {
+        "id": "name_صالح",
+        "text": "صالح!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "صالح"
+      },
+      {
+        "id": "name_ممدوح",
+        "text": "ممدوح!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "ممدوح"
+      },
+      {
+        "id": "name_مجتبى",
+        "text": "مجتبى!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "مجتبى"
+      },
+      {
+        "id": "name_كوثر",
+        "text": "كوثر!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "كوثر"
+      },
+      {
+        "id": "name_زهراء",
+        "text": "زهراء!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "زهراء"
+      },
+      {
+        "id": "name_بوعباس",
+        "text": "بوعباس!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "بوعباس"
+      },
+      {
+        "id": "name_بوزينب",
+        "text": "بوزينب!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "بوزينب"
+      },
+      {
+        "id": "name_منصور",
+        "text": "منصور!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "منصور"
+      },
+      {
+        "id": "name_سجاد",
+        "text": "سجاد!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "سجاد"
+      },
+      {
+        "id": "name_م_ر_س_ال",
+        "text": "مِرْسَال!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "مِرْسَال"
+      }
+    ]
+  },
+  {
+    "index": 9,
+    "style": "announcing a player's name, proud and excited, loud",
+    "items": [
+      {
+        "id": "name_محسن",
+        "text": "محسن!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "محسن"
+      },
+      {
+        "id": "name_الفريق_الأول",
+        "text": "الفريق الأول!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "الفريق الأول"
+      },
+      {
+        "id": "name_الفريق_الثاني",
+        "text": "الفريق الثاني!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "الفريق الثاني"
+      },
+      {
+        "id": "name_الفريق_الثالث",
+        "text": "الفريق الثالث!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "الفريق الثالث"
+      },
+      {
+        "id": "name_الفريق_الرابع",
+        "text": "الفريق الرابع!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "الفريق الرابع"
+      },
+      {
+        "id": "name_الهلال",
+        "text": "الهلال!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "الهلال"
+      },
+      {
+        "id": "name_النصر",
+        "text": "النصر!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "النصر"
+      },
+      {
+        "id": "name_الإتحاد",
+        "text": "الإتحاد!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "الإتحاد"
+      },
+      {
+        "id": "name_الأهلي",
+        "text": "الأهلي!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "الأهلي"
+      },
+      {
+        "id": "name_الفتح",
+        "text": "الفتح!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "الفتح"
+      },
+      {
+        "id": "name_برشلونه",
+        "text": "برشلونه!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "برشلونه"
+      },
+      {
+        "id": "name_ريال_مدريد",
+        "text": "ريال مدريد!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "ريال مدريد"
+      },
+      {
+        "id": "name_ناصر",
+        "text": "ناصر!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "ناصر"
+      },
+      {
+        "id": "name_ياسين",
+        "text": "ياسين!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "ياسين"
+      },
+      {
+        "id": "name_يوسف",
+        "text": "يوسف!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "يوسف"
+      },
+      {
+        "id": "name_غالب",
+        "text": "غالب!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "غالب"
+      },
+      {
+        "id": "name_يونس",
+        "text": "يونس!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "يونس"
+      },
+      {
+        "id": "name_مهدي",
+        "text": "مهدي!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "مهدي"
+      },
+      {
+        "id": "name_عبدالرحيم",
+        "text": "عبدالرحيم!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "عبدالرحيم"
+      },
+      {
+        "id": "name_ري_ان",
+        "text": "ريَّان!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "ريَّان"
+      },
+      {
+        "id": "name_سلطان",
+        "text": "سلطان!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "سلطان"
+      },
+      {
+        "id": "name_جهاد",
+        "text": "جهاد!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "جهاد"
+      },
+      {
+        "id": "name_أنور",
+        "text": "أنور!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "أنور"
+      },
+      {
+        "id": "name_الحسن",
+        "text": "الحسن!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "الحسن"
+      },
+      {
+        "id": "name_جواد",
+        "text": "جواد!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "جواد"
+      }
+    ]
+  },
+  {
+    "index": 10,
+    "style": "announcing a player's name, proud and excited, loud",
+    "items": [
+      {
+        "id": "name_زكريا",
+        "text": "زكريا!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "زكريا"
+      },
+      {
+        "id": "name_عبدالرحمن",
+        "text": "عبدالرحمن!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "عبدالرحمن"
+      },
+      {
+        "id": "name_عيسى",
+        "text": "عيسى!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "عيسى"
+      },
+      {
+        "id": "name_كاظم",
+        "text": "كاظم!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "كاظم"
+      },
+      {
+        "id": "name_عبدالعزيز",
+        "text": "عبدالعزيز!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "عبدالعزيز"
+      },
+      {
+        "id": "name_عمار",
+        "text": "عمار!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "عمار"
+      },
+      {
+        "id": "name_غيث",
+        "text": "غيث!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "غيث"
+      },
+      {
+        "id": "name_فارس",
+        "text": "فارس!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "فارس"
+      },
+      {
+        "id": "name_كرار",
+        "text": "كرار!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "كرار"
+      },
+      {
+        "id": "name_قاسم",
+        "text": "قاسم!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "قاسم"
+      },
+      {
+        "id": "name_كميل",
+        "text": "كميل!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "كميل"
+      },
+      {
+        "id": "name_عبدالهادي",
+        "text": "عبدالهادي!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "عبدالهادي"
+      },
+      {
+        "id": "name_أياد",
+        "text": "أياد!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "أياد"
+      },
+      {
+        "id": "name_إياد",
+        "text": "إياد!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "إياد"
+      },
+      {
+        "id": "name_مسلم",
+        "text": "مسلم!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "مسلم"
+      },
+      {
+        "id": "name_خليفة",
+        "text": "خليفة!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "خليفة"
+      },
+      {
+        "id": "name_راضي",
+        "text": "راضي!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "راضي"
+      },
+      {
+        "id": "name_طاهر",
+        "text": "طاهر!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "طاهر"
+      },
+      {
+        "id": "name_سعد",
+        "text": "سعد!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "سعد"
+      },
+      {
+        "id": "name_صالح",
+        "text": "صالح!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "صالح"
+      },
+      {
+        "id": "name_رضا",
+        "text": "رضا!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "رضا"
+      },
+      {
+        "id": "name_جابر",
+        "text": "جابر!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "جابر"
+      },
+      {
+        "id": "name_ليث",
+        "text": "ليث!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "ليث"
+      },
+      {
+        "id": "name_طه",
+        "text": "طه!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "طه"
+      },
+      {
+        "id": "name_إبراهيم",
+        "text": "إبراهيم!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "إبراهيم"
+      }
+    ]
+  },
+  {
+    "index": 11,
+    "style": "announcing a player's name, proud and excited, loud",
+    "items": [
+      {
+        "id": "name_مصطفى",
+        "text": "مصطفى!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "مصطفى"
+      },
+      {
+        "id": "name_عدنان",
+        "text": "عدنان!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "عدنان"
+      },
+      {
+        "id": "name_عبدالعظيم",
+        "text": "عبدالعظيم!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "عبدالعظيم"
+      },
+      {
+        "id": "name_سالم",
+        "text": "سالم!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "سالم"
+      },
+      {
+        "id": "name_جاسم",
+        "text": "جاسم!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "جاسم"
+      },
+      {
+        "id": "name_حمد",
+        "text": "حمد!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "حمد"
+      },
+      {
+        "id": "name_حبيب",
+        "text": "حبيب!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "حبيب"
+      },
+      {
+        "id": "name_علي_الحليمي",
+        "text": "علي الحليمي!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "علي الحليمي"
+      },
+      {
+        "id": "name_حبيب_الشويش",
+        "text": "حبيب الشويش!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "حبيب الشويش"
+      },
+      {
+        "id": "name_منصور_الناظري",
+        "text": "منصور الناظري!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "منصور الناظري"
+      },
+      {
+        "id": "name_حسين_البوحسن",
+        "text": "حسين البوحسن!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "حسين البوحسن"
+      },
+      {
+        "id": "name_محمد_الشقاق",
+        "text": "محمد الشقاق!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "محمد الشقاق"
+      },
+      {
+        "id": "name_حسين_البريه",
+        "text": "حسين البريه!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "حسين البريه"
+      },
+      {
+        "id": "name_عبدالله_العلي",
+        "text": "عبدالله العلي!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "عبدالله العلي"
+      },
+      {
+        "id": "name_محمد_المطر",
+        "text": "محمد المطر!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "محمد المطر"
+      },
+      {
+        "id": "name_حيدر_بوحسن",
+        "text": "حيدر بوحسن!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "حيدر بوحسن"
+      },
+      {
+        "id": "name_علي_السلمان",
+        "text": "علي السلمان!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "علي السلمان"
+      },
+      {
+        "id": "name_محمد_الفايز",
+        "text": "محمد الفايز!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "محمد الفايز"
+      },
+      {
+        "id": "name_أحمد_البوحسن",
+        "text": "أحمد البوحسن!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "أحمد البوحسن"
+      },
+      {
+        "id": "name_حسن_البوحسن",
+        "text": "حسن البوحسن!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "حسن البوحسن"
+      },
+      {
+        "id": "name_عبدالله_السبيعي",
+        "text": "عبدالله السبيعي!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "عبدالله السبيعي"
+      },
+      {
+        "id": "name_أحمد_الجاسم",
+        "text": "أحمد الجاسم!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "أحمد الجاسم"
+      },
+      {
+        "id": "name_محسن_المحسن",
+        "text": "محسن المحسن!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "محسن المحسن"
+      },
+      {
+        "id": "name_الأشتر",
+        "text": "الأشتر!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "الأشتر"
+      },
+      {
+        "id": "name_عبدالله_المويل",
+        "text": "عبدالله المويل!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "عبدالله المويل"
+      }
+    ]
+  },
+  {
+    "index": 12,
+    "style": "announcing a player's name, proud and excited, loud",
+    "items": [
+      {
+        "id": "name_حسين_العليوي",
+        "text": "حسين العليوي!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "حسين العليوي"
+      },
+      {
+        "id": "name_حسن_الشويش",
+        "text": "حسن الشويش!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "حسن الشويش"
+      },
+      {
+        "id": "name_محمد_مصطفى_الفايز",
+        "text": "محمد مصطفى الفايز!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "محمد مصطفى الفايز"
+      },
+      {
+        "id": "name_سجاد_الحمود",
+        "text": "سجاد الحمود!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "سجاد الحمود"
+      },
+      {
+        "id": "name_علي_البر_اك",
+        "text": "علي البرَّاك!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "علي البرَّاك"
+      },
+      {
+        "id": "name_موسى_الحمد",
+        "text": "موسى الحمد!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "موسى الحمد"
+      },
+      {
+        "id": "name_حسن_الأحمد",
+        "text": "حسن الأحمد!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "حسن الأحمد"
+      },
+      {
+        "id": "name_محمد_حسن_الجابر",
+        "text": "محمد حسن الجابر!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "محمد حسن الجابر"
+      },
+      {
+        "id": "name_عباس_المحمد",
+        "text": "عباس المحمد!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "عباس المحمد"
+      },
+      {
+        "id": "name_سعيد",
+        "text": "سعيد!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "سعيد"
+      },
+      {
+        "id": "name_سامي",
+        "text": "سامي!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "سامي"
+      },
+      {
+        "id": "name_جلال",
+        "text": "جلال!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "جلال"
+      },
+      {
+        "id": "name_عبد_الكريم",
+        "text": "عبد الكريم!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "عبد الكريم"
+      },
+      {
+        "id": "name_عيد",
+        "text": "عيد!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "عيد"
+      },
+      {
+        "id": "name_عبدالرزاق",
+        "text": "عبدالرزاق!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "عبدالرزاق"
+      },
+      {
+        "id": "name_عبدالفتاح",
+        "text": "عبدالفتاح!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "عبدالفتاح"
+      },
+      {
+        "id": "name_الأسد",
+        "text": "الأسد!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "الأسد"
+      },
+      {
+        "id": "name_النمر",
+        "text": "النمر!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "النمر"
+      },
+      {
+        "id": "name_الأسود",
+        "text": "الأسود!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "الأسود"
+      },
+      {
+        "id": "name_النمور",
+        "text": "النمور!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "النمور"
+      },
+      {
+        "id": "name_فجر",
+        "text": "فجر!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "فجر"
+      },
+      {
+        "id": "name_أباذر",
+        "text": "أباذر!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "أباذر"
+      },
+      {
+        "id": "name_سلوى",
+        "text": "سلوى!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "سلوى"
+      },
+      {
+        "id": "name_سهام",
+        "text": "سهام!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "سهام"
+      },
+      {
+        "id": "name_داوود",
+        "text": "داوود!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "داوود"
+      }
+    ]
+  },
+  {
+    "index": 13,
+    "style": "announcing a player's name, proud and excited, loud",
+    "items": [
+      {
+        "id": "name_ابتسام",
+        "text": "ابتسام!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "ابتسام"
+      },
+      {
+        "id": "name_شهد",
+        "text": "شهد!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "شهد"
+      },
+      {
+        "id": "name_هاشم",
+        "text": "هاشم!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "هاشم"
+      },
+      {
+        "id": "name_ضياء",
+        "text": "ضياء!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "ضياء"
+      },
+      {
+        "id": "name_كيان",
+        "text": "كيان!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "كيان"
+      },
+      {
+        "id": "name_ساجده",
+        "text": "ساجده!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "ساجده"
+      },
+      {
+        "id": "name_عمران",
+        "text": "عمران!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "عمران"
+      },
+      {
+        "id": "name_غريب",
+        "text": "غريب!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "غريب"
+      },
+      {
+        "id": "name_مريم",
+        "text": "مريم!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "مريم"
+      },
+      {
+        "id": "name_سهيله",
+        "text": "سهيله!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "سهيله"
+      },
+      {
+        "id": "name_أشواق",
+        "text": "أشواق!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "أشواق"
+      },
+      {
+        "id": "name_وفاء",
+        "text": "وفاء!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "وفاء"
+      },
+      {
+        "id": "name_إزدهار",
+        "text": "إزدهار!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "إزدهار"
+      },
+      {
+        "id": "name_سلمى",
+        "text": "سلمى!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "سلمى"
+      },
+      {
+        "id": "name_حنين",
+        "text": "حنين!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "حنين"
+      },
+      {
+        "id": "name_فجر",
+        "text": "فجر!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "فجر"
+      },
+      {
+        "id": "name_سحر",
+        "text": "سحر!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "سحر"
+      },
+      {
+        "id": "name_جنى",
+        "text": "جنى!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "جنى"
+      },
+      {
+        "id": "name_زكيه",
+        "text": "زكيه!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "زكيه"
+      },
+      {
+        "id": "name_رحمه",
+        "text": "رحمه!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "رحمه"
+      },
+      {
+        "id": "name_شروق",
+        "text": "شروق!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "شروق"
+      },
+      {
+        "id": "name_بيان",
+        "text": "بيان!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "بيان"
+      },
+      {
+        "id": "name_حميده",
+        "text": "حميده!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "حميده"
+      },
+      {
+        "id": "name_دعاء",
+        "text": "دعاء!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "دعاء"
+      },
+      {
+        "id": "name_غاليه",
+        "text": "غاليه!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "غاليه"
+      }
+    ]
+  },
+  {
+    "index": 14,
+    "style": "announcing a player's name, proud and excited, loud",
+    "items": [
+      {
+        "id": "name_علياء",
+        "text": "علياء!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "علياء"
+      },
+      {
+        "id": "name_لمياء",
+        "text": "لمياء!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "لمياء"
+      },
+      {
+        "id": "name_جمعه",
+        "text": "جمعه!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "جمعه"
+      },
+      {
+        "id": "name_نوح",
+        "text": "نوح!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "نوح"
+      },
+      {
+        "id": "name_طالب",
+        "text": "طالب!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "طالب"
+      },
+      {
+        "id": "name_فاضل",
+        "text": "فاضل!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "فاضل"
+      },
+      {
+        "id": "name_عباس",
+        "text": "عباس!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "عباس"
+      },
+      {
+        "id": "name_أفراح",
+        "text": "أفراح!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "أفراح"
+      },
+      {
+        "id": "name_الحسين",
+        "text": "الحسين!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "الحسين"
+      },
+      {
+        "id": "name_باقر",
+        "text": "باقر!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "باقر"
+      },
+      {
+        "id": "name_صادق",
+        "text": "صادق!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "صادق"
+      },
+      {
+        "id": "name_عارف",
+        "text": "عارف!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "عارف"
+      },
+      {
+        "id": "name_شاكر",
+        "text": "شاكر!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "شاكر"
+      },
+      {
+        "id": "name_غدير",
+        "text": "غدير!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "غدير"
+      },
+      {
+        "id": "name_أمينه",
+        "text": "أمينه!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "أمينه"
+      },
+      {
+        "id": "name_جميله",
+        "text": "جميله!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "جميله"
+      },
+      {
+        "id": "name_منال",
+        "text": "منال!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "منال"
+      },
+      {
+        "id": "name_وليد",
+        "text": "وليد!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "وليد"
+      },
+      {
+        "id": "name_عبير",
+        "text": "عبير!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "عبير"
+      },
+      {
+        "id": "name_بلقيس",
+        "text": "بلقيس!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "بلقيس"
+      },
+      {
+        "id": "name_حوراء",
+        "text": "حوراء!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "حوراء"
+      },
+      {
+        "id": "name_إسماعيل",
+        "text": "إسماعيل!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "إسماعيل"
+      },
+      {
+        "id": "name_لميعه",
+        "text": "لميعه!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "لميعه"
+      },
+      {
+        "id": "name_نوره",
+        "text": "نوره!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "نوره"
+      },
+      {
+        "id": "name_بتول",
+        "text": "بتول!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "بتول"
+      }
+    ]
+  },
+  {
+    "index": 15,
+    "style": "announcing a player's name, proud and excited, loud",
+    "items": [
+      {
+        "id": "name_هاجر",
+        "text": "هاجر!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "هاجر"
+      },
+      {
+        "id": "name_خالد",
+        "text": "خالد!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "خالد"
+      },
+      {
+        "id": "name_خلف",
+        "text": "خلف!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "خلف"
+      },
+      {
+        "id": "name_بنين",
+        "text": "بنين!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "بنين"
+      },
+      {
+        "id": "name_رباب",
+        "text": "رباب!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "رباب"
+      },
+      {
+        "id": "name_حجي",
+        "text": "حجي!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "حجي"
+      },
+      {
+        "id": "name_بدر",
+        "text": "بدر!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "بدر"
+      },
+      {
+        "id": "name_دانيال",
+        "text": "دانيال!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "دانيال"
+      },
+      {
+        "id": "name_سفر",
+        "text": "سفر!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "سفر"
+      },
+      {
+        "id": "name_مناحي",
+        "text": "مناحي!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "مناحي"
+      },
+      {
+        "id": "name_مجاهد",
+        "text": "مجاهد!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "مجاهد"
+      },
+      {
+        "id": "name_زيد",
+        "text": "زيد!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "زيد"
+      },
+      {
+        "id": "name_مكي",
+        "text": "مكي!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "مكي"
+      },
+      {
+        "id": "name_غياث",
+        "text": "غياث!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "غياث"
+      },
+      {
+        "id": "name_أسماء",
+        "text": "أسماء!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "أسماء"
+      },
+      {
+        "id": "name_كمال",
+        "text": "كمال!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "كمال"
+      },
+      {
+        "id": "name_قمر",
+        "text": "قمر!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "قمر"
+      },
+      {
+        "id": "name_فواز",
+        "text": "فواز!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "فواز"
+      },
+      {
+        "id": "name_ماجد",
+        "text": "ماجد!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "ماجد"
+      },
+      {
+        "id": "name_وداد",
+        "text": "وداد!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "وداد"
+      },
+      {
+        "id": "name_سعاد",
+        "text": "سعاد!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "سعاد"
+      },
+      {
+        "id": "name_غاده",
+        "text": "غاده!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "غاده"
+      },
+      {
+        "id": "name_رامي",
+        "text": "رامي!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "رامي"
+      },
+      {
+        "id": "name_مها",
+        "text": "مها!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "مها"
+      },
+      {
+        "id": "name_خديجه",
+        "text": "خديجه!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "خديجه"
+      }
+    ]
+  },
+  {
+    "index": 16,
+    "style": "announcing a player's name, proud and excited, loud",
+    "items": [
+      {
+        "id": "name_سعيده",
+        "text": "سعيده!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "سعيده"
+      },
+      {
+        "id": "name_عبداللطيف",
+        "text": "عبداللطيف!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "عبداللطيف"
+      },
+      {
+        "id": "name_عبدالوهاب",
+        "text": "عبدالوهاب!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "عبدالوهاب"
+      },
+      {
+        "id": "name_وهب",
+        "text": "وهب!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "وهب"
+      },
+      {
+        "id": "name_أسيل",
+        "text": "أسيل!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "أسيل"
+      },
+      {
+        "id": "name_زياد",
+        "text": "زياد!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "زياد"
+      },
+      {
+        "id": "name_شيماء",
+        "text": "شيماء!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "شيماء"
+      },
+      {
+        "id": "name_خضر",
+        "text": "خضر!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "خضر"
+      },
+      {
+        "id": "name_سلمان",
+        "text": "سلمان!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "سلمان"
+      },
+      {
+        "id": "name_فهد",
+        "text": "فهد!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "فهد"
+      },
+      {
+        "id": "name_مبارك",
+        "text": "مبارك!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "مبارك"
+      },
+      {
+        "id": "name_هيازع",
+        "text": "هيازع!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "هيازع"
+      },
+      {
+        "id": "name_سعود",
+        "text": "سعود!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "سعود"
+      },
+      {
+        "id": "name_نور",
+        "text": "نور!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "نور"
+      },
+      {
+        "id": "name_تركي",
+        "text": "تركي!",
+        "style": "announcing a player's name, proud and excited, loud",
+        "name": "تركي"
+      }
+    ]
+  },
+  {
+    "index": 17,
+    "style": "calling out a number with excitement, crisp and clear, loud",
+    "items": [
+      {
+        "id": "n1",
+        "text": "واحد!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n2",
+        "text": "اثنان!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n3",
+        "text": "ثلاثة!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n4",
+        "text": "أربعة!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n5",
+        "text": "خمسة!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n6",
+        "text": "ستة!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n7",
+        "text": "سبعة!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n8",
+        "text": "ثمانية!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n9",
+        "text": "تسعة!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n10",
+        "text": "عشرة!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n11",
+        "text": "أحد عشر!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n12",
+        "text": "اثنا عشر!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n13",
+        "text": "ثلاثة عشر!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n14",
+        "text": "أربعة عشر!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n15",
+        "text": "خمسة عشر!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n16",
+        "text": "ستة عشر!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n17",
+        "text": "سبعة عشر!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n18",
+        "text": "ثمانية عشر!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n19",
+        "text": "تسعة عشر!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n20",
+        "text": "عشرون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n21",
+        "text": "واحد وعشرون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n22",
+        "text": "اثنان وعشرون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n23",
+        "text": "ثلاثة وعشرون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n24",
+        "text": "أربعة وعشرون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n25",
+        "text": "خمسة وعشرون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      }
+    ]
+  },
+  {
+    "index": 18,
+    "style": "calling out a number with excitement, crisp and clear, loud",
+    "items": [
+      {
+        "id": "n26",
+        "text": "ستة وعشرون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n27",
+        "text": "سبعة وعشرون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n28",
+        "text": "ثمانية وعشرون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n29",
+        "text": "تسعة وعشرون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n30",
+        "text": "ثلاثون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n31",
+        "text": "واحد وثلاثون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n32",
+        "text": "اثنان وثلاثون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n33",
+        "text": "ثلاثة وثلاثون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n34",
+        "text": "أربعة وثلاثون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n35",
+        "text": "خمسة وثلاثون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n36",
+        "text": "ستة وثلاثون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n37",
+        "text": "سبعة وثلاثون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n38",
+        "text": "ثمانية وثلاثون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n39",
+        "text": "تسعة وثلاثون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n40",
+        "text": "أربعون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n41",
+        "text": "واحد وأربعون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n42",
+        "text": "اثنان وأربعون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n43",
+        "text": "ثلاثة وأربعون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n44",
+        "text": "أربعة وأربعون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n45",
+        "text": "خمسة وأربعون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n46",
+        "text": "ستة وأربعون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n47",
+        "text": "سبعة وأربعون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n48",
+        "text": "ثمانية وأربعون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n49",
+        "text": "تسعة وأربعون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n50",
+        "text": "خمسون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      }
+    ]
+  },
+  {
+    "index": 19,
+    "style": "calling out a number with excitement, crisp and clear, loud",
+    "items": [
+      {
+        "id": "n51",
+        "text": "واحد وخمسون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n52",
+        "text": "اثنان وخمسون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n53",
+        "text": "ثلاثة وخمسون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n54",
+        "text": "أربعة وخمسون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n55",
+        "text": "خمسة وخمسون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n56",
+        "text": "ستة وخمسون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n57",
+        "text": "سبعة وخمسون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n58",
+        "text": "ثمانية وخمسون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n59",
+        "text": "تسعة وخمسون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n60",
+        "text": "ستون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n61",
+        "text": "واحد وستون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n62",
+        "text": "اثنان وستون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n63",
+        "text": "ثلاثة وستون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n64",
+        "text": "أربعة وستون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n65",
+        "text": "خمسة وستون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n66",
+        "text": "ستة وستون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n67",
+        "text": "سبعة وستون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n68",
+        "text": "ثمانية وستون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n69",
+        "text": "تسعة وستون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n70",
+        "text": "سبعون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n71",
+        "text": "واحد وسبعون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n72",
+        "text": "اثنان وسبعون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n73",
+        "text": "ثلاثة وسبعون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n74",
+        "text": "أربعة وسبعون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n75",
+        "text": "خمسة وسبعون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      }
+    ]
+  },
+  {
+    "index": 20,
+    "style": "calling out a number with excitement, crisp and clear, loud",
+    "items": [
+      {
+        "id": "n76",
+        "text": "ستة وسبعون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n77",
+        "text": "سبعة وسبعون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n78",
+        "text": "ثمانية وسبعون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n79",
+        "text": "تسعة وسبعون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n80",
+        "text": "ثمانون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n81",
+        "text": "واحد وثمانون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n82",
+        "text": "اثنان وثمانون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n83",
+        "text": "ثلاثة وثمانون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n84",
+        "text": "أربعة وثمانون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n85",
+        "text": "خمسة وثمانون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n86",
+        "text": "ستة وثمانون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n87",
+        "text": "سبعة وثمانون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n88",
+        "text": "ثمانية وثمانون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n89",
+        "text": "تسعة وثمانون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n90",
+        "text": "تسعون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n91",
+        "text": "واحد وتسعون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n92",
+        "text": "اثنان وتسعون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n93",
+        "text": "ثلاثة وتسعون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n94",
+        "text": "أربعة وتسعون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n95",
+        "text": "خمسة وتسعون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n96",
+        "text": "ستة وتسعون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n97",
+        "text": "سبعة وتسعون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n98",
+        "text": "ثمانية وتسعون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n99",
+        "text": "تسعة وتسعون!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      },
+      {
+        "id": "n100",
+        "text": "مئة!",
+        "style": "calling out a number with excitement, crisp and clear, loud",
+        "name": null
+      }
+    ]
+  }
+]

@@ -1,0 +1,115 @@
+import type { ArenaId, CardType, FairMode, RoomSettings, RuleKey, ThemeColorId, TopicId } from '@/types/game';
+
+export const APP_TITLE_AR = 'تحدي الأبطال';
+export const APP_TITLE_EN = 'Champions Challenge';
+
+export const COLORS = ['#e0533d', '#2f7fd6', '#d99a00', '#8a4fd1', '#17a589', '#d6336c'] as const;
+
+export const OFF: ReadonlyArray<[number, number]> = [
+  [-18, -13],
+  [0, -13],
+  [18, -13],
+  [-18, 14],
+  [0, 14],
+  [18, 14],
+];
+
+export const SIZES = [6, 7, 8, 9, 10] as const;
+
+export const LEVELS: ReadonlyArray<[string, number]> = [
+  ['سهل', 20],
+  ['متوسط', 15],
+  ['صعب', 12],
+];
+
+export const TOPICS: ReadonlyArray<[TopicId, string]> = [
+  ['mul', 'الضرب'],
+  ['div', 'القسمة'],
+  ['add', 'الجمع'],
+  ['sub', 'الطرح'],
+  ['sqrt', 'الجذور التربيعية'],
+  ['geo', 'الأشكال الهندسية'],
+];
+
+export const FAIR: ReadonlyArray<[FairMode, string]> = [
+  ['each', 'مستوى لكل لاعب'],
+  ['adaptive', 'صعوبة متكيفة'],
+  ['both', 'الاثنان معًا'],
+  ['one', 'مستوى واحد للجميع'],
+];
+
+export const RULES: ReadonlyArray<[RuleKey, string]> = [
+  ['ladders', '🪜 السلالم'],
+  ['snakes', '🐍 الحيات'],
+  ['pushback', '↩️ إرجاع خصم'],
+  ['allq', '⭐ سؤال الجميع'],
+  ['cards', '🃏 بطاقات القدرات'],
+  ['steal', '⚡ سرقة الإجابة'],
+  ['penalty', '⚽ ضربة جزاء'],
+];
+
+export const THEMES: ReadonlyArray<[ThemeColorId, string, string]> = [
+  ['green', 'الأخضر الزمردي', '#1f6b52'],
+  ['orange', 'البرتقالي الناري', '#d95d1e'],
+  ['purple', 'البنفسجي الملكي', '#6f3cc3'],
+  ['blue', 'الأزرق المحيطي', '#1d68b8'],
+  ['crimson', 'الأحمر الياقوتي', '#b82841'],
+  ['gold', 'الذهبي الفاخر', '#b07d12'],
+];
+
+export const ARENAS: ReadonlyArray<[ArenaId, string, string, string[]]> = [
+  ['classic', '🏟️ ملعب الأبطال', 'كلاسيكي بألوان حيوية وسلالم وحيات', ['#e4572e', '#f0a202', '#2e86de', '#3fae5a']],
+  ['horror', '👻 القلعة المسكونة', 'أجواء رعب وأشباح وخفافيش وسلالم متوهجة', ['#1e1333', '#4c1d95', '#991b1b', '#c084fc']],
+  ['funny', '🤡 كرتوني مرح', 'ألوان حلوى ووحوش مضحكة وقشور موز', ['#ff595e', '#ffca3a', '#8ac926', '#1982c4']],
+  ['space', '🚀 الفضاء والمجرات', 'نيون مجري وصواريخ وثقوب سوداء', ['#0f172a', '#1e1b4b', '#00f5d4', '#a855f7']],
+  ['jungle', '🌴 غابة المغامرات', 'أخشاب وسلالم حبال وأفاعي الأدغال', ['#2d6a4f', '#b5835a', '#52b788', '#d4a373']],
+];
+
+export const CARD: Record<CardType, [string, string]> = {
+  shield: ['🛡️', 'درع'],
+  double: ['🎲', 'نرد مضاعف'],
+  freeze: ['❄️', 'تجميد'],
+  swap: ['🔄', 'تبديل السؤال'],
+};
+
+export const REACT = ['👏', '🔥', '😂', '😱', '⚽'] as const;
+
+export const EMO = ['🦁', '🐯', '🦅', '🐬', '🦊', '🐼', '🚀', '⚽', '🌟', '🐎', '🦉', '🐢'] as const;
+
+export const ALLT = [1, 2, 3, 4, 5, 6, 7, 8, 9] as const;
+export const MAXP = 6;
+
+export const DEF_SETTINGS: RoomSettings = {
+  size: 6,
+  level: 1,
+  topics: ['mul'],
+  tables: [...ALLT],
+  fair: 'each',
+  ladders: true,
+  snakes: true,
+  pushback: true,
+  allq: true,
+  cards: true,
+  steal: true,
+  penalty: true,
+  mode: 'multi',
+  theme: 'green',
+  arena: 'classic',
+};
+
+export const ROOT_ADMIN = {
+  email: 'a.alhofufy@gmail.com',
+  aliases: ['alhofufy.a@gmail.com'] as string[],
+  hash: '57972265854348ce50452cb2560b61c1b802cc116b8f1c0bbb8ba5a860570bcf',
+  root: true,
+};
+
+export const AUDIO_SLOTS: ReadonlyArray<[string, string, string]> = [
+  ['win', 'الفوز', 'بدل عبارة «هدف»'],
+  ['correct', 'إجابة صحيحة', ''],
+  ['wrong', 'إجابة خاطئة', ''],
+  ['ladder', 'السلّم', ''],
+  ['snake', 'الحية', ''],
+  ['cheer', 'هتاف الجمهور', 'عند الصواب والفوز'],
+  ['amb', 'أجواء الملعب', 'يتكرر طوال اللعب'],
+];
