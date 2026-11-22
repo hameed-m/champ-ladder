@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import ThemeColorPicker from '@/components/ThemeColorPicker.vue';
 import {
   ALLT,
   ARENAS,
@@ -249,6 +250,11 @@ function selectArena(id: ArenaId) {
             <small class="text-xs leading-snug text-ink/75">{{ desc }}</small>
           </button>
         </div>
+      </div>
+
+      <div class="rounded-2xl border-2 border-line bg-bg p-3.5">
+        <span class="mb-2 block text-base font-extrabold text-ink">🎨 لون التطبيق</span>
+        <ThemeColorPicker :compact="true" :sync-to-room="true" />
       </div>
 
       <div class="rounded-2xl border-2 border-line bg-bg p-3.5">

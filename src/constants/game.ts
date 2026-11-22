@@ -1,4 +1,4 @@
-import type { ArenaId, CardType, DecisionTimeSec, FairMode, MoveMode, RoomSettings, RuleKey, ThemeColorId, TopicId } from '@/types/game';
+import type { ArenaId, CardType, DecisionTimeSec, FairMode, MoveMode, RoomSettings, RuleKey, ThemeColorId, ThemeConfig, TopicId } from '@/types/game';
 
 export const APP_TITLE_AR = 'تحدي الأبطال';
 export const APP_TITLE_EN = 'Champions Challenge';
@@ -60,6 +60,44 @@ export const RULES: ReadonlyArray<[RuleKey, string]> = [
   ['penalty', '⚽ ضربة جزاء'],
 ];
 
+export interface ThemePreset {
+  id: string;
+  label: string;
+  hue: number;
+  vivid: number;
+}
+
+export const THEME_PRESETS: ReadonlyArray<ThemePreset> = [
+  { id: 'green', label: 'الأخضر الزمردي', hue: 162, vivid: 75 },
+  { id: 'teal', label: 'التركواز البحري', hue: 195, vivid: 80 },
+  { id: 'blue', label: 'الأزرق المحيطي', hue: 245, vivid: 85 },
+  { id: 'indigo', label: 'النيلي العميق', hue: 270, vivid: 82 },
+  { id: 'purple', label: 'البنفسجي الملكي', hue: 295, vivid: 85 },
+  { id: 'pink', label: 'الوردي المشرق', hue: 342, vivid: 88 },
+  { id: 'crimson', label: 'الأحمر الياقوتي', hue: 16, vivid: 92 },
+  { id: 'orange', label: 'البرتقالي الناري', hue: 46, vivid: 92 },
+  { id: 'gold', label: 'الذهبي الفاخر', hue: 82, vivid: 85 },
+  { id: 'lime', label: 'الليموني الحيوي', hue: 128, vivid: 82 },
+  { id: 'copper', label: 'النحاسي الدافئ', hue: 56, vivid: 42 },
+  { id: 'slate', label: 'الرمادي الأنيق', hue: 235, vivid: 14 },
+];
+
+export const DEFAULT_THEME_CONFIG: ThemeConfig = { hue: 162, vivid: 75 };
+
+export function normalizeThemeConfig(cfg?: Partial<ThemeConfig> | null, legacyId?: string): ThemeConfig {
+  if (cfg && typeof cfg.hue === 'number' && !Number.isNaN(cfg.hue)) {
+    return {
+      hue: ((Math.round(cfg.hue) % 360) + 360) % 360,
+      vivid: Math.max(0, Math.min(100, Math.round(typeof cfg.vivid === 'number' ? cfg.vivid : 75))),
+    };
+  }
+  if (legacyId) {
+    const preset = THEME_PRESETS.find((p) => p.id === legacyId);
+    if (preset) return { hue: preset.hue, vivid: preset.vivid };
+  }
+  return { ...DEFAULT_THEME_CONFIG };
+}
+
 export const THEMES: ReadonlyArray<[ThemeColorId, string, string]> = [
   ['green', 'الأخضر الزمردي', '#1f6b52'],
   ['orange', 'البرتقالي الناري', '#d95d1e'],
@@ -109,6 +147,7 @@ export const DEF_SETTINGS: RoomSettings = {
   decisionTime: 10,
   clientAudio: true,
   theme: 'green',
+  themeConfig: { ...DEFAULT_THEME_CONFIG },
   arena: 'classic',
 };
 

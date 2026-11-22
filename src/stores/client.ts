@@ -309,7 +309,7 @@ export const useClientStore = defineStore('client', () => {
       viewData.value = v;
       ws.setView('client');
       if (v.clientAudio === false) stopComment();
-      if (v.theme) theme.applyHostDefault(v.theme);
+      if (v.themeConfig || v.theme) theme.setRoomDefault(v.themeConfig, v.theme);
       if (v.buzz) buzz(v.buzz);
 
       const isMobile = window.innerWidth < 820;

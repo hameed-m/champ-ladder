@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
-import { ALLT, ARENAS, DEF_SETTINGS, EMO, ROOT_ADMIN, THEMES } from '@/constants/game';
+import { ALLT, ARENAS, DEF_SETTINGS, EMO, normalizeThemeConfig, ROOT_ADMIN, THEMES } from '@/constants/game';
 import {
   deleteRemoteAdmin,
   deleteRemotePlayer,
@@ -39,6 +39,7 @@ function ensureSetDefaults(setObj: Partial<RoomSettings> | undefined): RoomSetti
   if (!Array.isArray(base.topics)) base.topics = [...DEF_SETTINGS.topics];
   if (!Array.isArray(base.tables)) base.tables = [...DEF_SETTINGS.tables];
   if (!THEMES.some((t) => t[0] === base.theme)) base.theme = 'green';
+  base.themeConfig = normalizeThemeConfig(setObj?.themeConfig, base.theme);
   if (!ARENAS.some((a) => a[0] === base.arena)) base.arena = 'classic';
   if (base.moveMode !== 'dice' && base.moveMode !== 'speed') base.moveMode = 'dice';
   if (![0, 5, 10, 15].includes(base.decisionTime)) base.decisionTime = 10;
@@ -213,7 +214,7 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     if (session.value) {
       activeAdmin.value = session.value.email;
     }
-    themeStore.applyHostDefault(currentRoom.value.set.theme);
+    themeStore.setRoomDefault(currentRoom.value.set.themeConfig, currentRoom.value.set.theme);
 
     if (canNet()) {
       try {
@@ -230,7 +231,7 @@ export const useWorkspaceStore = defineStore('workspace', () => {
           const remoteRooms = await loadRemoteWorkspace(session.value.email);
           if (remoteRooms && remoteRooms.length) {
             setAdminRooms(session.value.email, remoteRooms);
-            themeStore.applyHostDefault(currentRoom.value.set.theme);
+            themeStore.setRoomDefault(currentRoom.value.set.themeConfig, currentRoom.value.set.theme);
           } else if (remoteRooms && remoteRooms.length === 0) {
             await syncRemoteWorkspace(session.value.email, currentWorkspace.value.rooms);
           }
@@ -292,7 +293,7 @@ export const useWorkspaceStore = defineStore('workspace', () => {
         cloudText.value = '💾 محفوظ تلقائيًا على هذا الجهاز';
       }
     }
-    useThemeStore().applyHostDefault(currentRoom.value.set.theme);
+    useThemeStore().setRoomDefault(currentRoom.value.set.themeConfig, currentRoom.value.set.theme);
     saveLocal();
     return { ok: true };
   }
@@ -369,7 +370,7 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     const rm = ws.rooms.find((r) => r.id === roomId);
     if (!rm) return;
     ws.activeRoomId = rm.id;
-    useThemeStore().applyHostDefault(rm.set.theme);
+    useThemeStore().setRoomDefault(rm.set.themeConfig, rm.set.theme);
     saveLocal();
   }
 

@@ -1,4 +1,8 @@
 export type ThemeColorId = 'green' | 'orange' | 'purple' | 'blue' | 'crimson' | 'gold';
+export interface ThemeConfig {
+  hue: number;
+  vivid: number;
+}
 export type ArenaId = 'classic' | 'horror' | 'funny' | 'space' | 'jungle';
 export type TopicId = 'mul' | 'div' | 'add' | 'sub' | 'sqrt' | 'geo';
 export type FairMode = 'each' | 'adaptive' | 'both' | 'one';
@@ -34,6 +38,7 @@ export interface RoomSettings {
   decisionTime: DecisionTimeSec;
   clientAudio: boolean;
   theme: ThemeColorId;
+  themeConfig: ThemeConfig;
   arena: ArenaId;
 }
 
@@ -160,6 +165,7 @@ export interface ClientViewMessage {
   moveMode: MoveMode;
   clientAudio: boolean;
   theme: ThemeColorId;
+  themeConfig?: ThemeConfig;
   board: BoardData;
   players: BoardPlayerView[];
   msg: string;

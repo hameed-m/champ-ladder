@@ -242,6 +242,7 @@ export const useGameStore = defineStore('game', () => {
       moveMode: ws.currentSettings.moveMode || 'dice',
       clientAudio: ws.currentSettings.clientAudio !== false,
       theme: ws.currentSettings.theme || 'green',
+      themeConfig: { ...ws.currentSettings.themeConfig },
       board: {
         n: board.value.n,
         arena: board.value.arena,
@@ -526,7 +527,7 @@ export const useGameStore = defineStore('game', () => {
     paused.value = false;
     showEndModal.value = false;
     const s = ws.currentSettings;
-    theme.applyHostDefault(s.theme);
+    theme.setRoomDefault(s.themeConfig, s.theme);
 
     players.value = seats.value.map((st, i) => {
       const pr = ws.findProfile(st.pid)!;

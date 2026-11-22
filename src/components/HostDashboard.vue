@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import MatchSettingsPanel from '@/components/MatchSettingsPanel.vue';
+import ThemeColorPicker from '@/components/ThemeColorPicker.vue';
 import {
   ALLT,
   ARENAS,
   AUDIO_SLOTS,
   LEVELS,
   RULES,
-  THEMES,
   TOPICS,
 } from '@/constants/game';
 import {
@@ -27,14 +27,12 @@ import {
   whistle,
 } from '@/services/audio';
 import { useGameStore } from '@/stores/game';
-import { useThemeStore } from '@/stores/theme';
 import { useWorkspaceStore } from '@/stores/workspace';
-import type { ArenaId, ThemeColorId } from '@/types/game';
+import type { ArenaId } from '@/types/game';
 import { ar, canNet } from '@/utils/format';
 
 const ws = useWorkspaceStore();
 const game = useGameStore();
-const theme = useThemeStore();
 
 const setupTab = ref<'room' | 'rules' | 'style'>('room');
 
@@ -147,12 +145,6 @@ async function handleImport(e: Event) {
 
 function selectArena(id: ArenaId) {
   s.value.arena = id;
-  ws.save();
-}
-
-function selectTheme(id: ThemeColorId) {
-  s.value.theme = id;
-  theme.setColor(id, true);
   ws.save();
 }
 
@@ -603,28 +595,13 @@ function handleStart() {
         </div>
       </div>
 
-      <!-- App Color Theme -->
+      <!-- App Analog Color Theme Picker (Req #9) -->
       <div class="rounded-2xl border-2 border-line bg-bg p-3.5">
-        <span class="block text-base font-extrabold text-ink">🎨 لون التطبيق</span>
-        <p class="mt-0.5 text-xs text-ink/75">يغيّر ألوان الواجهة والأزرار (ويمكن لكل لاعب تغييره من جهازه أيضًا).</p>
-        <div class="mt-2.5 grid grid-cols-2 gap-2 sm:grid-cols-3">
-          <button
-            v-for="[id, label, hex] in THEMES"
-            :key="id"
-            type="button"
-            :aria-pressed="theme.color === id"
-            class="flex cursor-pointer items-center gap-2.5 rounded-xl border-2 px-3 py-2.5 text-sm font-extrabold transition"
-            :class="
-              theme.color === id
-                ? 'border-accent bg-accent-soft ring-2 ring-accent'
-                : 'border-line bg-card text-ink hover:border-accent'
-            "
-            @click="selectTheme(id)"
-          >
-            <i class="h-5 w-5 shrink-0 rounded-full border-2 border-white/60" :style="{ backgroundColor: hex }" />
-            <span>{{ label }}</span>
-          </button>
-        </div>
+        <span class="block text-base font-extrabold text-ink">🎨 لون التطبيق (اختيار حر)</span>
+        <p class="mt-0.5 mb-3 text-xs text-ink/75">
+          حرّك المؤشر لاختيار أي لون يناسب ذوقك، ويتزامن تلقائيًا كاللون الافتراضي لأجهزة اللاعبين في هذه الغرفة.
+        </p>
+        <ThemeColorPicker :sync-to-room="true" />
       </div>
 
       <!-- Players' Devices Audio Toggle (Req #22) -->

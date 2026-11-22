@@ -1,34 +1,58 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
-import { THEMES } from '@/constants/game';
-import type { ThemeColorId } from '@/types/game';
+import { computed, ref } from 'vue';
+import { DEFAULT_THEME_CONFIG, normalizeThemeConfig } from '@/constants/game';
+import type { ThemeConfig } from '@/types/game';
 
-const THEME_KEY = 'sullam-theme-v1';
+const THEME_KEY = 'sullam-theme-v2';
+const LEGACY_THEME_KEY = 'sullam-theme-v1';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
+export function vividToFactor(vivid: number): number {
+  const clamped = Math.max(0, Math.min(100, vivid));
+  return Number((0.15 + (clamped / 100) * 1.0).toFixed(3));
+}
+
+export function oklchPreviewColor(hue: number, vivid: number, isDark = false): string {
+  const f = vividToFactor(vivid);
+  return isDark
+    ? `oklch(0.76 ${(0.155 * f).toFixed(4)} ${hue})`
+    : `oklch(0.50 ${(0.165 * f).toFixed(4)} ${hue})`;
+}
+
 export const useThemeStore = defineStore('theme', () => {
-  const color = ref<ThemeColorId>('green');
+  const hue = ref<number>(DEFAULT_THEME_CONFIG.hue);
+  const vivid = ref<number>(DEFAULT_THEME_CONFIG.vivid);
   const dark = ref<boolean>(
     typeof window !== 'undefined' &&
       window.matchMedia &&
       window.matchMedia('(prefers-color-scheme: dark)').matches,
   );
   const userPicked = ref<boolean>(false);
+  const roomDefault = ref<ThemeConfig | null>(null);
+
   const canInstall = ref<boolean>(false);
   let deferredPrompt: BeforeInstallPromptEvent | null = null;
 
+  const config = computed<ThemeConfig>(() => ({ hue: hue.value, vivid: vivid.value }));
+
+  const hasCustomOverride = computed<boolean>(() => {
+    if (!userPicked.value || !roomDefault.value) return false;
+    return roomDefault.value.hue !== hue.value || roomDefault.value.vivid !== vivid.value;
+  });
+
   function applyDOM(): void {
     const root = document.documentElement;
-    root.setAttribute('data-color', color.value);
+    root.style.setProperty('--theme-hue', String(hue.value));
+    root.style.setProperty('--theme-vivid', String(vividToFactor(vivid.value)));
     root.setAttribute('data-theme', dark.value ? 'dark' : 'light');
-    const found = THEMES.find((t) => t[0] === color.value);
+
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta && found) {
-      meta.setAttribute('content', dark.value ? '#0c1914' : found[2]);
+    if (meta) {
+      meta.setAttribute('content', dark.value ? '#11181c' : oklchPreviewColor(hue.value, vivid.value, false));
     }
   }
 
@@ -37,7 +61,8 @@ export const useThemeStore = defineStore('theme', () => {
       localStorage.setItem(
         THEME_KEY,
         JSON.stringify({
-          color: color.value,
+          hue: hue.value,
+          vivid: vivid.value,
           dark: dark.value,
           userPicked: userPicked.value,
         }),
@@ -51,9 +76,20 @@ export const useThemeStore = defineStore('theme', () => {
     try {
       const saved = JSON.parse(localStorage.getItem(THEME_KEY) || 'null');
       if (saved && typeof saved === 'object') {
-        if (THEMES.some((t) => t[0] === saved.color)) color.value = saved.color;
+        const norm = normalizeThemeConfig(saved);
+        hue.value = norm.hue;
+        vivid.value = norm.vivid;
         if (typeof saved.dark === 'boolean') dark.value = saved.dark;
         if (typeof saved.userPicked === 'boolean') userPicked.value = saved.userPicked;
+      } else {
+        const legacy = JSON.parse(localStorage.getItem(LEGACY_THEME_KEY) || 'null');
+        if (legacy && typeof legacy === 'object') {
+          const norm = normalizeThemeConfig(null, legacy.color);
+          hue.value = norm.hue;
+          vivid.value = norm.vivid;
+          if (typeof legacy.dark === 'boolean') dark.value = legacy.dark;
+          if (typeof legacy.userPicked === 'boolean') userPicked.value = legacy.userPicked;
+        }
       }
     } catch {
       // Ignore
@@ -71,18 +107,48 @@ export const useThemeStore = defineStore('theme', () => {
     });
   }
 
-  function setColor(next: ThemeColorId, fromUser = true): void {
-    if (!THEMES.some((t) => t[0] === next)) return;
-    color.value = next;
+  function setConfig(next: Partial<ThemeConfig>, fromUser = true): void {
+    const norm = normalizeThemeConfig({
+      hue: next.hue ?? hue.value,
+      vivid: next.vivid ?? vivid.value,
+    });
+    hue.value = norm.hue;
+    vivid.value = norm.vivid;
     if (fromUser) userPicked.value = true;
     persist();
     applyDOM();
   }
 
-  function applyHostDefault(next: ThemeColorId): void {
+  function setRoomDefault(next: ThemeConfig | null | undefined, legacyId?: string): void {
+    const norm = normalizeThemeConfig(next, legacyId);
+    roomDefault.value = norm;
     if (!userPicked.value) {
-      setColor(next, false);
+      hue.value = norm.hue;
+      vivid.value = norm.vivid;
+      applyDOM();
     }
+  }
+
+  function resetToRoomDefault(): void {
+    userPicked.value = false;
+    if (roomDefault.value) {
+      hue.value = roomDefault.value.hue;
+      vivid.value = roomDefault.value.vivid;
+    } else {
+      hue.value = DEFAULT_THEME_CONFIG.hue;
+      vivid.value = DEFAULT_THEME_CONFIG.vivid;
+    }
+    persist();
+    applyDOM();
+  }
+
+  function randomize(fromUser = true): ThemeConfig {
+    const next = {
+      hue: Math.floor(Math.random() * 360),
+      vivid: 65 + Math.floor(Math.random() * 30),
+    };
+    setConfig(next, fromUser);
+    return next;
   }
 
   function toggleDark(): void {
@@ -100,13 +166,19 @@ export const useThemeStore = defineStore('theme', () => {
   }
 
   return {
-    color,
+    hue,
+    vivid,
     dark,
     userPicked,
+    roomDefault,
+    config,
+    hasCustomOverride,
     canInstall,
     init,
-    setColor,
-    applyHostDefault,
+    setConfig,
+    setRoomDefault,
+    resetToRoomDefault,
+    randomize,
     toggleDark,
     installPwa,
   };
