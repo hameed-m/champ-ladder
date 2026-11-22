@@ -117,11 +117,30 @@ export const ARENAS: ReadonlyArray<[ArenaId, string, string, string[]]> = [
   ['jungle', '🌴 غابة المغامرات', 'أخشاب وسلالم حبال وأفاعي الأدغال', ['#2d6a4f', '#b5835a', '#52b788', '#d4a373']],
 ];
 
+export const MAX_CARDS = 4;
+
 export const CARD: Record<CardType, [string, string]> = {
   shield: ['🛡️', 'درع'],
+  mirror: ['🪞', 'المرآة العاكسة'],
   double: ['🎲', 'نرد مضاعف'],
-  freeze: ['❄️', 'تجميد'],
+  freeze: ['❄️', 'تجميد خصم'],
   swap: ['🔄', 'تبديل السؤال'],
+  fifty: ['✂️', 'حذف إجابتين'],
+  extratime: ['⏳', 'وقت إضافي +١٠ث'],
+  boost: ['🚀', 'دفعة صاروخية +٣'],
+  swap_pos: ['🔀', 'تبادل المراكز'],
+};
+
+export const CARD_DESC: Record<CardType, string> = {
+  shield: 'تلقائي: يحميك من الحية أو من إرجاع الخصم',
+  mirror: 'تلقائي: يعكس هجمة الإرجاع ويردّها على الخصم المهاجم',
+  double: 'يضاعف خطوات النرد أو السرعة في هذا الدور',
+  freeze: 'اختر خصمًا لتقليص وقت سؤاله القادم إلى النصف',
+  swap: 'يستبدل السؤال الحالي بسؤال جديد فورًا',
+  fifty: 'يحذف إجابتين خاطئتين أثناء السؤال',
+  extratime: 'يضيف ١٠ ثوانٍ إضافية لمؤقت السؤال الحالي',
+  boost: 'يدفعك ٣ خانات للأمام مباشرة (قبل السؤال أو الرمي)',
+  swap_pos: 'اختر خصمًا لتتبادل معه موقعك على الساحة',
 };
 
 export const REACT = ['👏', '🔥', '😂', '😱', '⚽'] as const;
@@ -148,6 +167,7 @@ export const DEF_SETTINGS: RoomSettings = {
   moveMode: 'dice',
   decisionTime: 10,
   clientAudio: true,
+  warmup: true,
   theme: 'green',
   themeConfig: { ...DEFAULT_THEME_CONFIG },
   arena: 'classic',

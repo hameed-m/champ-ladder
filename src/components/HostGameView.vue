@@ -158,6 +158,7 @@ const fsHudCenter = computed(() => {
           <b class="block truncate text-sm font-extrabold">{{ p.name }}</b>
           <small class="block text-xs text-ink/75">
             {{ p.off ? 'منقطع، ' : '' }}{{ ar(p.score) }} نقطة، خانة {{ ar(p.pos) }}
+            <span v-if="p.frozen" title="مجمّد">❄️</span>
             <span v-if="p.cards?.length">
               {{ p.cards.map((c) => CARD[c][0]).join('') }}
             </span>

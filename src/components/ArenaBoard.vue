@@ -155,7 +155,7 @@ const targetCamBox = computed(() => {
   const activePlayer = props.players.find((p) => p.i === eff.playerIndex);
   const focusPos = activePlayer ? activePlayer.pos : eff.toPos;
   const center = cellFor(Math.max(1, Math.min(last.value, focusPos)), n.value);
-  const zoomFactor = eff.kind === 'shield-block' ? 1.95 : 1.78;
+  const zoomFactor = eff.kind === 'shield-block' || eff.kind === 'mirror-reflect' ? 1.95 : 1.78;
   const w = Math.min(full, Math.max(260, full / zoomFactor));
   const h = w;
   const x = Math.max(0, Math.min(full - w, center.x - w / 2));
@@ -209,22 +209,53 @@ const effectTheme = computed(() => {
   const p = props.players.find((pl) => pl.i === eff.playerIndex);
   const curPos = p ? p.pos : eff.toPos;
   const fromCell = cellFor(Math.max(1, Math.min(last.value, eff.fromPos)), n.value);
+  const toCell = cellFor(Math.max(1, Math.min(last.value, eff.toPos)), n.value);
   const curCell = cellFor(Math.max(1, Math.min(last.value, curPos)), n.value);
-  const isFwd = eff.kind === 'fwd' || eff.kind === 'ladder';
+  const isFwd = eff.kind === 'fwd' || eff.kind === 'ladder' || eff.kind === 'boost';
   const isBack = eff.kind === 'back' || eff.kind === 'snake';
   const isShield = eff.kind === 'shield-block';
+  const isMirror = eff.kind === 'mirror-reflect';
+  const isSwap = eff.kind === 'swap-pos';
+  const lineEndCell = isMirror || isSwap ? toCell : curCell;
   return {
     id: eff.id,
     kind: eff.kind,
     playerIndex: eff.playerIndex,
     fromCell,
     curCell,
+    lineEndCell,
     isFwd,
     isBack,
     isShield,
-    color: isFwd ? '#22c55e' : isBack ? '#ef4444' : '#38bdf8',
-    lightColor: isFwd ? '#86efac' : isBack ? '#fca5a5' : '#bae6fd',
-    gradId: isFwd ? 'glow-fwd' : isBack ? 'glow-back' : 'glow-shield',
+    isMirror,
+    isSwap,
+    color: isFwd
+      ? '#22c55e'
+      : isBack
+        ? '#ef4444'
+        : isMirror
+          ? '#a855f7'
+          : isSwap
+            ? '#f59e0b'
+            : '#38bdf8',
+    lightColor: isFwd
+      ? '#86efac'
+      : isBack
+        ? '#fca5a5'
+        : isMirror
+          ? '#e9d5ff'
+          : isSwap
+            ? '#fde68a'
+            : '#bae6fd',
+    gradId: isFwd
+      ? 'glow-fwd'
+      : isBack
+        ? 'glow-back'
+        : isMirror
+          ? 'glow-mirror'
+          : isSwap
+            ? 'glow-swap'
+            : 'glow-shield',
   };
 });
 
@@ -298,6 +329,10 @@ function avatarSvgFor(emoji: string): string | null {
 
 function hasShield(p: BoardPlayerView): boolean {
   return !!p.cards && p.cards.includes('shield');
+}
+
+function hasMirror(p: BoardPlayerView): boolean {
+  return !!p.cards && p.cards.includes('mirror');
 }
 
 function toggleFullscreen() {
@@ -419,6 +454,16 @@ onUnmounted(() => {
           <stop offset="0%" stop-color="#e0f2fe" stop-opacity="0.95" />
           <stop offset="45%" stop-color="#38bdf8" stop-opacity="0.55" />
           <stop offset="100%" stop-color="#0284c7" stop-opacity="0" />
+        </radialGradient>
+        <radialGradient id="glow-mirror" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#f3e8ff" stop-opacity="0.95" />
+          <stop offset="45%" stop-color="#c084fc" stop-opacity="0.55" />
+          <stop offset="100%" stop-color="#7e22ce" stop-opacity="0" />
+        </radialGradient>
+        <radialGradient id="glow-swap" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#fef3c7" stop-opacity="0.95" />
+          <stop offset="45%" stop-color="#f59e0b" stop-opacity="0.55" />
+          <stop offset="100%" stop-color="#b45309" stop-opacity="0" />
         </radialGradient>
         <clipPath id="token-avatar-clip">
           <circle cx="0" cy="0" r="11.2" />
@@ -651,13 +696,13 @@ onUnmounted(() => {
 
       <!-- Movement Directional Light / Trail Layer (Req #9 & #12) -->
       <g v-if="effectTheme" class="pointer-events-none">
-        <!-- Luminous trail between origin and current cell -->
+        <!-- Luminous trail between origin and current/target cell -->
         <line
-          v-if="!effectTheme.isShield && (effectTheme.fromCell.x !== effectTheme.curCell.x || effectTheme.fromCell.y !== effectTheme.curCell.y)"
+          v-if="!effectTheme.isShield && (effectTheme.fromCell.x !== effectTheme.lineEndCell.x || effectTheme.fromCell.y !== effectTheme.lineEndCell.y)"
           :x1="effectTheme.fromCell.x"
           :y1="effectTheme.fromCell.y"
-          :x2="effectTheme.curCell.x"
-          :y2="effectTheme.curCell.y"
+          :x2="effectTheme.lineEndCell.x"
+          :y2="effectTheme.lineEndCell.y"
           :stroke="effectTheme.color"
           stroke-width="10"
           stroke-linecap="round"
@@ -737,17 +782,39 @@ onUnmounted(() => {
             />
           </g>
 
-          <!-- Shield Deflection / Shatter Shockwave Burst (Req #12) -->
+          <!-- Active Mirror Reflect Aura (Req #13: Shimmering Violet/Silver Prism Ring) -->
+          <g v-if="hasMirror(p)" class="pointer-events-none">
+            <circle
+              r="23"
+              fill="url(#glow-mirror)"
+              class="svg-shield-pulse"
+            />
+            <polygon
+              points="0,-22.5 22.5,0 0,22.5 -22.5,0"
+              fill="none"
+              stroke="#e9d5ff"
+              stroke-width="2"
+              stroke-dasharray="6 4"
+              class="svg-shield-orbit"
+            />
+          </g>
+
+          <!-- Shield / Mirror Deflection Burst (Req #12 & #13) -->
           <g
-            v-if="effectTheme && effectTheme.isShield && effectTheme.playerIndex === p.i"
+            v-if="effectTheme && (effectTheme.isShield || effectTheme.isMirror) && effectTheme.playerIndex === p.i"
             :key="'shb-' + effectTheme.id"
             class="svg-shield-burst pointer-events-none"
           >
-            <circle r="22" fill="rgba(186,230,253,0.4)" stroke="#ffffff" stroke-width="3.5" />
+            <circle
+              r="22"
+              :fill="effectTheme.isMirror ? 'rgba(233,213,255,0.45)' : 'rgba(186,230,253,0.4)'"
+              stroke="#ffffff"
+              stroke-width="3.5"
+            />
             <polygon
               points="0,-25 21.6,-12.5 21.6,12.5 0,25 -21.6,12.5 -21.6,-12.5"
               fill="none"
-              stroke="#38bdf8"
+              :stroke="effectTheme.isMirror ? '#c084fc' : '#38bdf8'"
               stroke-width="3"
             />
             <line x1="-22" y1="-22" x2="-13" y2="-13" stroke="#fef08a" stroke-width="2.5" stroke-linecap="round" />
@@ -839,6 +906,18 @@ onUnmounted(() => {
           <g v-if="hasShield(p)" transform="translate(-11.5, -11.5)">
             <circle r="6.2" fill="#0284c7" stroke="#e0f2fe" stroke-width="1.5" />
             <text y="3" text-anchor="middle" font-size="8">🛡️</text>
+          </g>
+
+          <!-- Mini Mirror Crest when Player Holds Mirror Reflect -->
+          <g v-if="hasMirror(p)" transform="translate(11.5, -11.5)">
+            <circle r="6.2" fill="#7e22ce" stroke="#f3e8ff" stroke-width="1.5" />
+            <text y="3" text-anchor="middle" font-size="8">🪞</text>
+          </g>
+
+          <!-- Mini Frost Badge when Player is Frozen -->
+          <g v-if="p.frozen" transform="translate(-11.5, 11)">
+            <circle r="6" fill="#0369a1" stroke="#bae6fd" stroke-width="1.5" />
+            <text y="2.8" text-anchor="middle" font-size="7.5">❄️</text>
           </g>
         </g>
       </g>

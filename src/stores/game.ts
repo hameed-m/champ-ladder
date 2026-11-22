@@ -3,7 +3,7 @@ import { computed, markRaw, ref } from 'vue';
 import Peer, { type DataConnection } from 'peerjs';
 import QRCode from 'qrcode';
 import { sanitizeAvatarId } from '@/constants/avatars';
-import { CARD, COLORS, LEVELS, MAXP, REACT } from '@/constants/game';
+import { CARD, COLORS, LEVELS, MAX_CARDS, MAXP, REACT } from '@/constants/game';
 import {
   captionText,
   comment,
@@ -39,7 +39,7 @@ import type {
   Question,
   SfxName,
 } from '@/types/game';
-import { ar, pickOne, rnd, sleep, within } from '@/utils/format';
+import { ar, pickOne, rnd, shuffle, sleep, within } from '@/utils/format';
 import { useThemeStore } from '@/stores/theme';
 import { useWorkspaceStore } from '@/stores/workspace';
 
@@ -48,6 +48,7 @@ export interface LobbySeat {
   token: string | null;
   conn: DataConnection | null;
   seen?: number;
+  warmingUp?: boolean;
 }
 
 interface RaceState {
@@ -156,6 +157,7 @@ export const useGameStore = defineStore('game', () => {
       score: p.score,
       turn: i === cur.value,
       off: mode.value === 'online' && !connected(p),
+      frozen: p.frozen,
       cards: p.cards,
     })),
   );
@@ -248,6 +250,7 @@ export const useGameStore = defineStore('game', () => {
         pos: x.pos,
         color: x.color,
         shielded: x.cards.includes('shield'),
+        mirrored: x.cards.includes('mirror'),
       }));
   }
 
@@ -260,6 +263,7 @@ export const useGameStore = defineStore('game', () => {
     const curP = players.value[cur.value];
     const v: ClientViewMessage = {
       t: 'view',
+      selfIndex: i,
       phase: phase.value,
       paused: paused.value,
       name: p.name,
@@ -297,6 +301,7 @@ export const useGameStore = defineStore('game', () => {
         pos: x.pos,
         score: x.score,
         turn: x.turn,
+        frozen: x.frozen,
         cards: x.cards ? [...x.cards] : [],
       })),
       boardEffect: boardEffect.value ? { ...boardEffect.value } : null,
@@ -319,6 +324,7 @@ export const useGameStore = defineStore('game', () => {
         fig: activeQ.fig || '',
         kind: activeQ.kind,
         opts: activeQ.opts,
+        eliminatedOpts: activeQ.eliminatedOpts ? [...activeQ.eliminatedOpts] : undefined,
         timeSec: activeQ.timeSec,
       };
       v.reveal = activeQ.reveal ? { ans: activeQ.ans, pick: activeQ.reveal.pick } : null;
@@ -470,6 +476,35 @@ export const useGameStore = defineStore('game', () => {
     });
   }
 
+  function buildWaitPayload(pid: string) {
+    const pObj = ws.findProfile(pid);
+    const cfg = ws.cfgOf(pid, 0);
+    return {
+      t: 'wait',
+      name: pObj ? pObj.name : 'لاعب',
+      avatar: pObj ? pObj.emoji : '🦁',
+      warmupCfg: {
+        enabled: ws.currentSettings.warmup !== false,
+        level: cfg.level,
+        topics: [...cfg.topics],
+        tables: [...cfg.tables],
+      },
+    };
+  }
+
+  function broadcastLobbyWait(): void {
+    if (mode.value !== 'online' || ws.view !== 'lobby') return;
+    seats.value.forEach((s) => {
+      if (live(s)) {
+        try {
+          s.conn!.send(buildWaitPayload(s.pid));
+        } catch {
+          // Ignore
+        }
+      }
+    });
+  }
+
   function handleHello(c: DataConnection, token: string): void {
     const existing = seats.value.find((x) => x.token === token);
     if (existing) {
@@ -483,12 +518,11 @@ export const useGameStore = defineStore('game', () => {
           // Ignore
         }
       }
-      const pObj = ws.findProfile(existing.pid);
       if (ws.view === 'game') {
         broadcastState();
         pushToPlayer(players.value.findIndex((p) => p.token === existing.token));
       } else {
-        c.send({ t: 'wait', name: pObj ? pObj.name : 'لاعب', avatar: pObj ? pObj.emoji : '🦁' });
+        c.send(buildWaitPayload(existing.pid));
       }
       return;
     }
@@ -515,8 +549,8 @@ export const useGameStore = defineStore('game', () => {
     if (cleanAv && p.emoji !== cleanAv) {
       ws.setPlayerAvatar(p, cleanAv);
     }
-    seats.value.push({ pid: p.id, token: String(m.token || ''), conn: markRaw(c), seen: Date.now() });
-    c.send({ t: 'wait', name: p.name, avatar: p.emoji });
+    seats.value.push({ pid: p.id, token: String(m.token || ''), conn: markRaw(c), seen: Date.now(), warmingUp: false });
+    c.send(buildWaitPayload(p.id));
   }
 
   function handleConn(c: DataConnection): void {
@@ -529,6 +563,10 @@ export const useGameStore = defineStore('game', () => {
       if (!s) return;
       s.seen = Date.now();
       if (m.t === 'pong') return;
+      if (m.t === 'warmup') {
+        s.warmingUp = !!m.active;
+        return;
+      }
       if (m.t === 'avatar') {
         const cleanAv = sanitizeAvatarId(m.avatar);
         if (!cleanAv) return;
@@ -540,7 +578,7 @@ export const useGameStore = defineStore('game', () => {
           broadcastState();
         } else if (pr) {
           try {
-            c.send({ t: 'wait', name: pr.name, avatar: pr.emoji });
+            c.send(buildWaitPayload(pr.id));
           } catch {
             // Ignore
           }
@@ -829,18 +867,54 @@ export const useGameStore = defineStore('game', () => {
     setTurn();
   }
 
-  async function executePushOpponent(actor: PlayerRuntime, targetIdx: number, d: number, ep: number): Promise<void> {
+  async function executePushOpponent(
+    actor: PlayerRuntime,
+    targetIdx: number,
+    d: number,
+    ep: number,
+    isReflected = false,
+  ): Promise<void> {
     clearInterval(tid);
     const target = players.value[targetIdx];
     if (!target || target === actor || target.pos <= 1) return;
     phase.value = 'busy';
 
-    /* Req #12: Shield blocks opponent pushbacks with crystal barrier shatter VFX */
+    /* Req #13: Mirror Reflect bounces an opponent's pushback right back onto the attacker */
+    if (!isReflected && target.cards.includes('mirror')) {
+      target.cards.splice(target.cards.indexOf('mirror'), 1);
+      target.buzz = 'good';
+      setBoardEffect(target.i, 'mirror-reflect', target.pos, actor.pos);
+      setMsg(`🪞 المرآة العاكسة لـ ${target.name} ردّت الإرجاع على ${actor.name}!`, 'ok');
+      playSfx('mirrorReflect');
+      crowdFx('roar', 0.8);
+      broadcastState();
+      await sleep(1100);
+      if (ep !== epoch || !(await gate(ep))) return;
+      if (actor.pos <= 1) {
+        setMsg(`🪞 انعكست الهجمة على ${actor.name} لكنه في الخانة الأولى أصلًا!`, 'ok');
+        clearBoardEffect();
+        broadcastState();
+        await sleep(800);
+        if (ep !== epoch || !(await gate(ep))) return;
+        cur.value = (cur.value + 1) % players.value.length;
+        setTurn();
+        return;
+      }
+      await executePushOpponent(target, actor.i, d, ep, true);
+      return;
+    }
+
+    /* Req #12: Shield blocks opponent pushbacks (including reflected pushbacks) */
     if (target.cards.includes('shield')) {
       target.cards.splice(target.cards.indexOf('shield'), 1);
       target.buzz = 'good';
       setBoardEffect(target.i, 'shield-block', target.pos, target.pos);
-      setMsg(`🛡️ الدرع حمى ${target.name} وصدّ إرجاع ${actor.name}!`, 'ok');
+      setMsg(
+        isReflected
+          ? `🛡️ الدرع حمى ${target.name} من الهجمة المنعكسة!`
+          : `🛡️ الدرع حمى ${target.name} وصدّ إرجاع ${actor.name}!`,
+        'ok',
+      );
       playSfx('shieldBlock');
       crowdFx('cheer', 0.75);
       broadcastState();
@@ -855,7 +929,12 @@ export const useGameStore = defineStore('game', () => {
 
     const startPos = target.pos;
     const estEnd = Math.max(1, startPos - d);
-    setMsg(`↩️ ${actor.name} قرر إرجاع ${target.name} ${ar(d)} خانات للخلف!`, 'bad');
+    setMsg(
+      isReflected
+        ? `🪞 الهجمة ارتدّت! ${target.name} يرجع ${ar(d)} خانات للخلف!`
+        : `↩️ ${actor.name} قرر إرجاع ${target.name} ${ar(d)} خانات للخلف!`,
+      'bad',
+    );
     setBoardEffect(target.i, 'back', startPos, estEnd, 0, d);
     crowdFx('roar', 0.65);
     broadcastState();
@@ -927,24 +1006,82 @@ export const useGameStore = defineStore('game', () => {
       }
     }
     if (m.t === 'card' && i === cur.value && m.c) {
-      useCard(i, m.c);
+      useCard(i, m.c, m.target);
     }
   }
 
   function gainCard(p: PlayerRuntime): CardType | false {
-    if (!ws.currentSettings.cards || p.cards.length >= 3) return false;
-    const c = pickOne(Object.keys(CARD) as CardType[]);
+    if (!ws.currentSettings.cards || p.cards.length >= MAX_CARDS) return false;
+    const hasOpponents = players.value.length > 1;
+    const pool = (Object.keys(CARD) as CardType[]).filter((c) => {
+      if (!hasOpponents && (c === 'freeze' || c === 'swap_pos' || c === 'mirror')) return false;
+      if (c === 'mirror' && ws.currentSettings.pushback === false) return false;
+      return true;
+    });
+    const c = pickOne(pool.length ? pool : (Object.keys(CARD) as CardType[]));
     p.cards.push(c);
     p.buzz = 'good';
     return c;
   }
 
-  function useCard(i: number, c: CardType): void {
+  async function executeBoostCard(p: PlayerRuntime, prevPhase: GamePhase, ep: number): Promise<void> {
+    phase.value = 'busy';
+    setMsg(`🚀 ${p.name} فعّل الدفعة الصاروخية (+٣ خانات)!`, 'ok');
+    playSfx('boost');
+    crowdFx('cheer', 0.65);
+    broadcastState();
+    await sleep(320);
+    if (ep !== epoch || !(await gate(ep))) return;
+    await stepTo(p, 3, ep, 'boost');
+    if (ep !== epoch || finishIf(p)) return;
+    await resolveSquareEffects(p, ep, 0, false);
+    if (ep !== epoch || won.value || !(await gate(ep))) return;
+    clearBoardEffect();
+    phase.value = prevPhase;
+    setMsg(prevPhase === 'roll' ? '🚀 دفعة رائعة! ارمِ النرد الآن 🎲' : '🚀 دفعة رائعة! أكمل دورك واعرض السؤال ❓', 'ok');
+    broadcastState();
+  }
+
+  async function executeSwapPosCard(
+    p: PlayerRuntime,
+    target: PlayerRuntime,
+    prevPhase: GamePhase,
+    ep: number,
+  ): Promise<void> {
+    phase.value = 'busy';
+    const pOld = p.pos;
+    const tOld = target.pos;
+    setBoardEffect(p.i, 'swap-pos', pOld, tOld);
+    setMsg(`🔀 ${p.name} يتبادل موقعه مع ${target.name}!`, 'ok');
+    playSfx('swapPos');
+    crowdFx('roar', 0.65);
+    broadcastState();
+    await sleep(550);
+    if (ep !== epoch || !(await gate(ep))) return;
+    p.pos = tOld;
+    target.pos = pOld;
+    setBoardEffect(p.i, 'swap-pos', tOld, pOld);
+    broadcastState();
+    await sleep(650);
+    if (ep !== epoch || won.value || !(await gate(ep))) return;
+    clearBoardEffect();
+    phase.value = prevPhase;
+    setMsg(
+      prevPhase === 'roll'
+        ? `🔀 تم التبادل مع ${target.name}! ارمِ النرد الآن 🎲`
+        : `🔀 تم التبادل مع ${target.name}! أكمل دورك الآن ❓`,
+      'ok',
+    );
+    broadcastState();
+  }
+
+  function useCard(i: number, c: CardType, targetIdx?: number): void {
     const p = players.value[i];
     if (!p) return;
     const at = p.cards.indexOf(c);
     if (at < 0) return;
     const isSpeed = ws.currentSettings.moveMode === 'speed';
+
     if (
       c === 'double' &&
       !p.dbl &&
@@ -956,15 +1093,66 @@ export const useGameStore = defineStore('game', () => {
       setMsg(isSpeed ? '⚡ ستتضاعف خطوات سرعتك في هذا الدور!' : '🎲 ستُرمى نردان في هذا الدور', 'ok');
       broadcastState();
     } else if (c === 'freeze' && (phase.value === 'ready' || phase.value === 'roll') && players.value.length > 1) {
+      const ti =
+        typeof targetIdx === 'number' && targetIdx >= 0 && targetIdx < players.value.length && targetIdx !== i
+          ? targetIdx
+          : (cur.value + 1) % players.value.length;
+      const target = players.value[ti];
+      if (!target || target === p) return;
       p.cards.splice(at, 1);
-      players.value[(cur.value + 1) % players.value.length]!.frozen = true;
-      playComment(['freeze'], 'تجميد! وقت اللاعب التالي نصف!');
-      setMsg('❄️ وقت اللاعب التالي نصف');
+      target.frozen = true;
+      playComment(['freeze'], `تجميد لـ ${target.name}! وقته القادم نصف!`);
+      setMsg(`❄️ ${p.name} جمّد ${target.name}! وقت سؤاله القادم النصف`, 'ok');
       broadcastState();
     } else if (c === 'swap' && phase.value === 'q' && q.value && !q.value.reveal) {
       p.cards.splice(at, 1);
       playComment(['swap'], 'تبديل السؤال!');
       ask();
+    } else if (
+      c === 'fifty' &&
+      phase.value === 'q' &&
+      q.value &&
+      !q.value.reveal &&
+      (!q.value.eliminatedOpts || !q.value.eliminatedOpts.length)
+    ) {
+      const wrongIndices = q.value.opts
+        .map((opt, idx) => (opt !== q.value!.ans ? idx : -1))
+        .filter((idx) => idx >= 0);
+      if (wrongIndices.length < 2) return;
+      p.cards.splice(at, 1);
+      q.value.eliminatedOpts = shuffle(wrongIndices).slice(0, 2);
+      playSfx('fifty');
+      setMsg('✂️ تم حذف إجابتين خاطئتين! ركّز على الباقي', 'ok');
+      broadcastState();
+    } else if (c === 'extratime' && phase.value === 'q' && q.value && !q.value.reveal) {
+      p.cards.splice(at, 1);
+      left.value += 10000;
+      total.value = Math.max(total.value, left.value);
+      playSfx('extraTime');
+      setMsg('⏳ +١٠ ثوانٍ إضافية للمؤقت!', 'ok');
+      broadcastState();
+    } else if (
+      c === 'boost' &&
+      (phase.value === 'ready' || phase.value === 'roll') &&
+      p.pos + 3 <= lastSquare.value
+    ) {
+      const prevPhase = phase.value;
+      p.cards.splice(at, 1);
+      void executeBoostCard(p, prevPhase, epoch);
+    } else if (
+      c === 'swap_pos' &&
+      (phase.value === 'ready' || phase.value === 'roll') &&
+      players.value.length > 1 &&
+      typeof targetIdx === 'number' &&
+      targetIdx >= 0 &&
+      targetIdx < players.value.length &&
+      targetIdx !== i
+    ) {
+      const target = players.value[targetIdx];
+      if (!target || target === p) return;
+      const prevPhase = phase.value;
+      p.cards.splice(at, 1);
+      void executeSwapPosCard(p, target, prevPhase, epoch);
     }
   }
 
@@ -977,6 +1165,7 @@ export const useGameStore = defineStore('game', () => {
 
   async function answer(i: number): Promise<void> {
     if (phase.value !== 'q' || !q.value || q.value.reveal) return;
+    if (i >= 0 && q.value.eliminatedOpts?.includes(i)) return;
     clearInterval(tid);
     const ep = epoch;
     const p = players.value[cur.value]!;
@@ -1135,12 +1324,17 @@ export const useGameStore = defineStore('game', () => {
     }
   }
 
-  async function stepTo(p: PlayerRuntime, k: number, ep: number): Promise<void> {
+  async function stepTo(
+    p: PlayerRuntime,
+    k: number,
+    ep: number,
+    effectKind: 'fwd' | 'boost' = 'fwd',
+  ): Promise<void> {
     const startPos = p.pos;
     const totalSteps = Math.min(k, Math.max(0, lastSquare.value - p.pos));
     for (let i = 0; i < k && p.pos < lastSquare.value; i++) {
       p.pos++;
-      setBoardEffect(p.i, 'fwd', startPos, p.pos, i, totalSteps);
+      setBoardEffect(p.i, effectKind, startPos, p.pos, i, totalSteps);
       playSfx('moveFwdStep', i, totalSteps);
       broadcastState();
       await sleep(270);
@@ -1429,6 +1623,7 @@ export const useGameStore = defineStore('game', () => {
     live,
     connected,
     openRoom,
+    broadcastLobbyWait,
     kickSeat,
     startLocalGame,
     startGame,

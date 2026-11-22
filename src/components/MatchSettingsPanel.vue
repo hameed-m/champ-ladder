@@ -126,6 +126,22 @@ function selectArena(id: ArenaId) {
           <span>{{ rLabel }}</span>
           <span class="text-xs opacity-90">{{ s[rKey] !== false ? '✓' : '✕' }}</span>
         </button>
+
+        <button
+          type="button"
+          :aria-pressed="s.warmup !== false"
+          title="يسمح للاعبين بحل أسئلة تدريبية في غرفة الانتظار قبل بدء المباراة"
+          class="inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-xl border-2 px-3.5 text-base font-extrabold transition"
+          :class="
+            s.warmup !== false
+              ? 'border-accent bg-accent text-accent-ink shadow-xs'
+              : 'border-line bg-card text-ink opacity-80 hover:border-accent'
+          "
+          @click="s.warmup = !(s.warmup !== false); ws.save()"
+        >
+          <span>🔥 إحماء غرفة الانتظار</span>
+          <span class="text-xs opacity-90">{{ s.warmup !== false ? '✓' : '✕' }}</span>
+        </button>
       </div>
     </div>
 

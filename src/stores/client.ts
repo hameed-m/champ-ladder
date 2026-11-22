@@ -9,7 +9,13 @@ import {
   stopComment,
   whistle,
 } from '@/services/audio';
-import type { ClientActionMessage, ClientAudioPacket, ClientViewMessage, FloatingFx } from '@/types/game';
+import type {
+  ClientActionMessage,
+  ClientAudioPacket,
+  ClientViewMessage,
+  FloatingFx,
+  WarmupConfig,
+} from '@/types/game';
 import { rnd, uid } from '@/utils/format';
 import { getPeerOpts, keepAwake } from '@/stores/game';
 import { useThemeStore } from '@/stores/theme';
@@ -66,6 +72,7 @@ export const useClientStore = defineStore('client', () => {
   const pickList = ref<PickOption[]>([]);
   const waitName = ref('');
   const waitAvatar = ref('🦁');
+  const waitWarmupCfg = ref<WarmupConfig | null>(null);
   const viewData = ref<ClientViewMessage | null>(null);
   const floatingFx = ref<FloatingFx[]>([]);
 
@@ -276,6 +283,9 @@ export const useClientStore = defineStore('client', () => {
       if (typeof m.avatar === 'string' && m.avatar) {
         waitAvatar.value = m.avatar;
       }
+      if (m.warmupCfg && typeof m.warmupCfg === 'object') {
+        waitWarmupCfg.value = m.warmupCfg as WarmupConfig;
+      }
       viewData.value = null;
       ws.setView('client');
       return;
@@ -361,6 +371,14 @@ export const useClientStore = defineStore('client', () => {
     }
   }
 
+  function notifyWarmupState(active: boolean): void {
+    try {
+      conn?.send({ t: 'warmup', active });
+    } catch {
+      // Ignore
+    }
+  }
+
   function sendAction(action: ClientActionMessage): void {
     keepAwake();
     unlockClientAudio();
@@ -397,6 +415,7 @@ export const useClientStore = defineStore('client', () => {
     pickList,
     waitName,
     waitAvatar,
+    waitWarmupCfg,
     viewData,
     floatingFx,
     arenaHidden,
@@ -407,6 +426,7 @@ export const useClientStore = defineStore('client', () => {
     pickExistingPlayer,
     pickCustomName,
     changeAvatar,
+    notifyWarmupState,
     sendAction,
     disconnectAndReset,
   };

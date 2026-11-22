@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onUnmounted, ref, watch } from 'vue';
 import ArenaBoard from '@/components/ArenaBoard.vue';
 import AvatarPickerModal from '@/components/AvatarPickerModal.vue';
 import ControllerPanel from '@/components/ControllerPanel.vue';
 import PlayerAvatar from '@/components/PlayerAvatar.vue';
+import WarmupPracticePanel from '@/components/WarmupPracticePanel.vue';
 import { avatarDisplayText } from '@/constants/avatars';
 import { CARD } from '@/constants/game';
 import { useClientStore } from '@/stores/client';
@@ -12,6 +13,28 @@ import { ar } from '@/utils/format';
 const client = useClientStore();
 const v = computed(() => client.viewData);
 const avatarModalOpen = ref(false);
+const warmupActive = ref(false);
+
+const canWarmup = computed(() => !v.value && !!client.waitWarmupCfg?.enabled);
+
+function toggleWarmup(next: boolean) {
+  warmupActive.value = next;
+  client.notifyWarmupState(next);
+}
+
+watch(
+  () => [!!v.value, !!client.waitWarmupCfg?.enabled] as const,
+  ([inMatch, enabled]) => {
+    if ((inMatch || !enabled) && warmupActive.value) {
+      warmupActive.value = false;
+      if (!inMatch) client.notifyWarmupState(false);
+    }
+  },
+);
+
+onUnmounted(() => {
+  if (warmupActive.value) client.notifyWarmupState(false);
+});
 
 const currentAvatar = computed(() => v.value?.emoji || client.waitAvatar || '🦁');
 
@@ -57,14 +80,32 @@ const fsHudRight = computed(() => {
         <p class="text-xl font-bold text-ink">
           مرحبًا <b>{{ client.waitName }}</b>! بانتظار بدء المباراة…
         </p>
-        <button
-          type="button"
-          class="mt-1 min-h-10 cursor-pointer rounded-xl border-2 border-accent bg-accent-soft px-4 text-sm font-extrabold text-ink transition hover:bg-accent hover:text-accent-ink"
-          @click="avatarModalOpen = true"
-        >
-          🎭 تغيير الأفاتار
-        </button>
+        <div class="mt-1 flex flex-wrap items-center justify-center gap-2">
+          <button
+            type="button"
+            class="min-h-10 cursor-pointer rounded-xl border-2 border-accent bg-accent-soft px-4 text-sm font-extrabold text-ink transition hover:bg-accent hover:text-accent-ink"
+            @click="avatarModalOpen = true"
+          >
+            🎭 تغيير الأفاتار
+          </button>
+
+          <button
+            v-if="canWarmup && !warmupActive"
+            type="button"
+            class="min-h-10 cursor-pointer rounded-xl bg-accent px-4 text-sm font-extrabold text-accent-ink shadow-xs transition hover:bg-accent-hover active:scale-[0.98]"
+            @click="toggleWarmup(true)"
+          >
+            🔥 إحماء قبل المباراة
+          </button>
+        </div>
       </div>
+
+      <WarmupPracticePanel
+        v-if="canWarmup && warmupActive && client.waitWarmupCfg"
+        :config="client.waitWarmupCfg"
+        :muted="client.localMuted"
+        @close="toggleWarmup(false)"
+      />
     </div>
 
     <!-- Active Player Screen (Compact Stats + Question on Top + Hideable Arena) -->
@@ -145,6 +186,7 @@ const fsHudRight = computed(() => {
           <b class="font-extrabold">{{ p.name }}</b>
           <small class="text-ink/75">
             خانة {{ ar(p.pos) }} · {{ ar(p.score) }}ن
+            <span v-if="p.frozen" title="مجمّد">❄️</span>
             <span v-if="p.cards?.length">{{ p.cards.map((c) => CARD[c][0]).join('') }}</span>
           </small>
         </div>

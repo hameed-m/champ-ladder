@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, onUnmounted, ref, watch } from 'vue';
 import PlayerAvatar from '@/components/PlayerAvatar.vue';
-import { CARD, REACT } from '@/constants/game';
-import type { CardType, ClientActionMessage, ClientViewMessage } from '@/types/game';
+import { CARD, CARD_DESC, REACT } from '@/constants/game';
+import type { BoardPlayerView, CardType, ClientActionMessage, ClientViewMessage } from '@/types/game';
 import { ar } from '@/utils/format';
 
 const props = defineProps<{
@@ -14,6 +14,7 @@ const emit = defineEmits<{
 }>();
 
 const sentQid = ref<number | null>(null);
+const pendingTargetCard = ref<'freeze' | 'swap_pos' | null>(null);
 const barPct = ref(100);
 const remSec = ref(0);
 let timerId = 0;
@@ -64,16 +65,70 @@ const canAsk = computed(() => props.view.turn && props.view.phase === 'ready' &&
 const canRoll = computed(() => props.view.turn && props.view.phase === 'roll' && !props.view.paused);
 const canChoose = computed(() => props.view.turn && props.view.phase === 'choose' && !props.view.paused);
 
+const opponents = computed<BoardPlayerView[]>(() =>
+  (props.view.players || []).filter((p) => p.i !== props.view.selfIndex),
+);
+
+watch(
+  () => [props.view.phase, props.view.turn, props.view.cards.join(',')],
+  () => {
+    if (
+      pendingTargetCard.value &&
+      (!props.view.turn ||
+        (props.view.phase !== 'ready' && props.view.phase !== 'roll') ||
+        !props.view.cards.includes(pendingTargetCard.value))
+    ) {
+      pendingTargetCard.value = null;
+    }
+  },
+);
+
 function isCardUsable(c: CardType): boolean {
   if (!props.view.turn || props.view.paused) return false;
-  if (c === 'freeze') return props.view.phase === 'ready' || props.view.phase === 'roll';
+  if (c === 'freeze') {
+    return (props.view.phase === 'ready' || props.view.phase === 'roll') && opponents.value.length > 0;
+  }
+  if (c === 'swap_pos') {
+    return (props.view.phase === 'ready' || props.view.phase === 'roll') && opponents.value.length > 0;
+  }
+  if (c === 'boost') {
+    return (
+      (props.view.phase === 'ready' || props.view.phase === 'roll') &&
+      props.view.pos + 3 <= props.view.last
+    );
+  }
   if (c === 'double') {
     return props.view.moveMode === 'speed'
       ? props.view.phase === 'ready' || props.view.phase === 'q'
       : props.view.phase === 'roll';
   }
-  if (c === 'swap') return props.view.phase === 'q';
+  if (c === 'swap') return props.view.phase === 'q' && !props.view.reveal;
+  if (c === 'extratime') return props.view.phase === 'q' && !props.view.reveal;
+  if (c === 'fifty') {
+    return (
+      props.view.phase === 'q' &&
+      !props.view.reveal &&
+      !(props.view.q?.eliminatedOpts && props.view.q.eliminatedOpts.length > 0)
+    );
+  }
   return false;
+}
+
+function handleCardClick(c: CardType) {
+  if (!isCardUsable(c)) return;
+  if (c === 'freeze' || c === 'swap_pos') {
+    pendingTargetCard.value = pendingTargetCard.value === c ? null : c;
+    return;
+  }
+  pendingTargetCard.value = null;
+  emit('action', { t: 'card', c });
+}
+
+function confirmCardTarget(targetIdx: number) {
+  const c = pendingTargetCard.value;
+  if (!c) return;
+  pendingTargetCard.value = null;
+  emit('action', { t: 'card', c, target: targetIdx });
 }
 
 function cardLabel(c: CardType): string {
@@ -81,8 +136,20 @@ function cardLabel(c: CardType): string {
   return `${CARD[c][0]} ${CARD[c][1]}`;
 }
 
+function isOptionEliminated(idx: number): boolean {
+  return !!props.view.q?.eliminatedOpts?.includes(idx);
+}
+
 function submitAnswer(idx: number) {
-  if (!props.view.qid || sentQid.value === props.view.qid || props.view.out || props.view.reveal) return;
+  if (
+    !props.view.qid ||
+    sentQid.value === props.view.qid ||
+    props.view.out ||
+    props.view.reveal ||
+    isOptionEliminated(idx)
+  ) {
+    return;
+  }
   sentQid.value = props.view.qid;
   emit('action', { t: 'answer', i: idx, id: props.view.qid });
 }
@@ -92,6 +159,9 @@ function optClass(opt: string, idx: number): string {
   if (rev) {
     if (opt === rev.ans) return 'bg-ok text-white border-ok';
     if (idx === rev.pick) return 'bg-bad text-white border-bad';
+  }
+  if (isOptionEliminated(idx)) {
+    return 'bg-bg/40 text-ink/30 border-dashed border-line line-through opacity-35';
   }
   return 'bg-bg text-ink border-line hover:border-accent';
 }
@@ -196,24 +266,75 @@ const isArabicText = (s: string) => /[ء-ي]/.test(s);
         >
           <PlayerAvatar :avatar="tg.emoji" size="xs" :ring-color="tg.color" />
           <span>
-            إرجاع {{ tg.name }} (−{{ ar(view.dice) }} من خانة {{ ar(tg.pos) }}){{ tg.shielded ? ' 🛡️' : '' }}
+            إرجاع {{ tg.name }} (−{{ ar(view.dice) }} من خانة {{ ar(tg.pos) }}){{ tg.mirrored ? ' 🪞' : '' }}{{ tg.shielded ? ' 🛡️' : '' }}
           </span>
         </button>
       </div>
     </div>
 
-    <!-- Power-Up Cards -->
-    <div v-if="view.cards.length" class="mt-2.5 flex flex-wrap gap-1.5">
-      <button
-        v-for="(c, ci) in view.cards"
-        :key="c + '-' + ci"
-        type="button"
-        :disabled="!isCardUsable(c)"
-        class="inline-flex min-h-9 cursor-pointer items-center gap-1 rounded-xl border-2 border-line bg-card px-3 text-sm font-extrabold text-ink transition hover:border-accent disabled:cursor-not-allowed disabled:opacity-45"
-        @click="emit('action', { t: 'card', c })"
+    <!-- Power-Up Cards (9 Cards, Max 4) -->
+    <div v-if="view.cards.length" class="mt-2.5 space-y-2">
+      <div class="flex flex-wrap gap-1.5">
+        <button
+          v-for="(c, ci) in view.cards"
+          :key="c + '-' + ci"
+          type="button"
+          :title="CARD_DESC[c]"
+          :disabled="!isCardUsable(c)"
+          class="inline-flex min-h-9 cursor-pointer items-center gap-1 rounded-xl border-2 px-3 text-sm font-extrabold transition disabled:cursor-not-allowed disabled:opacity-45"
+          :class="
+            pendingTargetCard === c
+              ? 'border-accent bg-accent text-accent-ink ring-2 ring-accent/40'
+              : 'border-line bg-card text-ink hover:border-accent'
+          "
+          @click="handleCardClick(c)"
+        >
+          {{ cardLabel(c) }}
+        </button>
+      </div>
+
+      <!-- Inline Opponent Picker for Targeted Power-Ups (Freeze & Position Swap) -->
+      <div
+        v-if="pendingTargetCard && opponents.length"
+        class="rounded-2xl border-2 border-accent bg-accent-soft/60 p-2.5"
       >
-        {{ cardLabel(c) }}
-      </button>
+        <div class="mb-2 flex items-center justify-between gap-2">
+          <span class="text-xs font-extrabold text-ink">
+            {{
+              pendingTargetCard === 'freeze'
+                ? '❄️ اختر الخصم الذي تريد تجميد وقته:'
+                : '🔀 اختر الخصم الذي تريد تبادل مركزك معه:'
+            }}
+          </span>
+          <button
+            type="button"
+            class="min-h-7 cursor-pointer rounded-lg border border-line bg-card px-2 text-xs font-extrabold text-ink hover:border-accent"
+            @click="pendingTargetCard = null"
+          >
+            إلغاء
+          </button>
+        </div>
+
+        <div class="grid gap-1.5">
+          <button
+            v-for="opp in opponents"
+            :key="opp.i"
+            type="button"
+            class="flex min-h-11 w-full cursor-pointer items-center justify-between gap-2 rounded-xl border-2 border-line bg-card px-3 text-sm font-extrabold text-ink transition hover:border-accent hover:bg-accent-soft"
+            @click="confirmCardTarget(opp.i)"
+          >
+            <span class="flex items-center gap-2">
+              <PlayerAvatar :avatar="opp.emoji" size="xs" :ring-color="opp.color" />
+              <span>{{ opp.name }}</span>
+              <span v-if="opp.frozen" class="text-xs">❄️</span>
+            </span>
+            <span class="text-xs font-bold text-ink/75">
+              خانة {{ ar(opp.pos) }}
+              {{ pendingTargetCard === 'swap_pos' && opp.pos > view.pos ? '⬆️' : '' }}
+            </span>
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Active Question -->
@@ -258,7 +379,7 @@ const isArabicText = (s: string) => /[ء-ي]/.test(s);
           v-for="(opt, idx) in view.q.opts"
           :key="idx"
           type="button"
-          :disabled="view.out || !!view.reveal || sentQid === view.qid"
+          :disabled="view.out || !!view.reveal || sentQid === view.qid || isOptionEliminated(idx)"
           class="min-h-16 cursor-pointer rounded-2xl border-2 px-2 transition active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-65"
           :class="[
             optClass(opt, idx),

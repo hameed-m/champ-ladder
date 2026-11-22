@@ -259,7 +259,9 @@ function clipFor(ev: string): string | null {
     return k;
   }
   if (ev === 'shield_push') return clipFor('shield');
-  if (ev === 'pushback') return null;
+  if (ev === 'pushback' || ev === 'mirror' || ev === 'fifty' || ev === 'extratime' || ev === 'boost' || ev === 'swap_pos') {
+    return null;
+  }
   return ev + '_0';
 }
 
@@ -521,6 +523,39 @@ export const SFX = {
       playMusicalNote(f, 0.42, { type: 'sine', vol: 0.11, delay: idx * 0.045, attack: 0.008 });
       playMusicalNote(f * 0.5, 0.36, { type: 'triangle', vol: 0.06, delay: idx * 0.045 });
     });
+  },
+  mirrorReflect: () => {
+    // Sweeping silvery mirror bounce chord (down-up prism reflection)
+    const sweep = [587.33, 880.0, 1174.66, 1760.0, 1318.51, 1760.0];
+    sweep.forEach((f, idx) => {
+      playMusicalNote(f, 0.32, { type: 'triangle', vol: 0.11, delay: idx * 0.04, attack: 0.006 });
+      playMusicalNote(f * 0.5, 0.28, { type: 'sine', vol: 0.055, delay: idx * 0.04 });
+    });
+  },
+  swapPos: () => {
+    // Playful teleport whoosh + twin chimes
+    playMusicalNote(392.0, 0.28, { type: 'sine', vol: 0.12, endFreq: 783.99 });
+    playMusicalNote(783.99, 0.28, { type: 'triangle', vol: 0.11, delay: 0.12, endFreq: 523.25 });
+    playMusicalNote(1046.5, 0.3, { type: 'sine', vol: 0.09, delay: 0.24 });
+  },
+  boost: () => {
+    // Energetic rocket launch arpeggio
+    const notes = [440.0, 554.37, 659.25, 880.0, 1108.73, 1318.51];
+    notes.forEach((f, idx) => {
+      playMusicalNote(f, 0.26, { type: 'triangle', vol: 0.12, delay: idx * 0.045 });
+      playMusicalNote(f * 0.5, 0.24, { type: 'sawtooth', vol: 0.04, filterHz: 1400, delay: idx * 0.045 });
+    });
+  },
+  extraTime: () => {
+    // Uplifting clockwork chime (+10s)
+    [659.25, 783.99, 1046.5].forEach((f, idx) => {
+      playMusicalNote(f, 0.3, { type: 'sine', vol: 0.12, delay: idx * 0.07 });
+    });
+  },
+  fifty: () => {
+    // Snappy twin-snip pop chime (50/50)
+    playMusicalNote(880.0, 0.14, { type: 'triangle', vol: 0.12, endFreq: 659.25 });
+    playMusicalNote(1174.66, 0.2, { type: 'triangle', vol: 0.12, delay: 0.11, endFreq: 1318.51 });
   },
   ok: () => {
     snd(660, 0.15, 'sine', 0.14);

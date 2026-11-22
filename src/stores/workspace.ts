@@ -44,6 +44,7 @@ function ensureSetDefaults(setObj: Partial<RoomSettings> | undefined): RoomSetti
   if (base.moveMode !== 'dice' && base.moveMode !== 'speed') base.moveMode = 'dice';
   if (![0, 5, 10, 15].includes(base.decisionTime)) base.decisionTime = 10;
   if (typeof base.clientAudio !== 'boolean') base.clientAudio = true;
+  if (typeof base.warmup !== 'boolean') base.warmup = true;
   if (!canNet()) base.mode = 'device';
   return base;
 }

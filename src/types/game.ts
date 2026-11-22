@@ -11,7 +11,16 @@ export type PlayMode = 'multi' | 'device';
 export type MoveMode = 'dice' | 'speed';
 export type DecisionTimeSec = 0 | 5 | 10 | 15;
 export type RuleKey = 'ladders' | 'snakes' | 'pushback' | 'allq' | 'cards' | 'steal' | 'penalty';
-export type CardType = 'shield' | 'double' | 'freeze' | 'swap';
+export type CardType =
+  | 'shield'
+  | 'double'
+  | 'freeze'
+  | 'swap'
+  | 'fifty'
+  | 'extratime'
+  | 'boost'
+  | 'mirror'
+  | 'swap_pos';
 export type GamePhase = 'busy' | 'ready' | 'q' | 'roll' | 'choose' | 'race' | 'end';
 export type AppView = 'setup' | 'lobby' | 'game' | 'pick' | 'client' | 'connect';
 
@@ -38,9 +47,17 @@ export interface RoomSettings {
   moveMode: MoveMode;
   decisionTime: DecisionTimeSec;
   clientAudio: boolean;
+  warmup: boolean;
   theme: ThemeColorId;
   themeConfig: ThemeConfig;
   arena: ArenaId;
+}
+
+export interface WarmupConfig {
+  enabled: boolean;
+  level: number;
+  topics: TopicId[];
+  tables: number[];
 }
 
 export interface PlayerStats {
@@ -90,6 +107,7 @@ export interface Question {
   tbl?: number;
   extra?: number;
   timeSec?: number;
+  eliminatedOpts?: number[];
   reveal?: { pick: number };
 }
 
@@ -133,6 +151,7 @@ export interface BoardPlayerView {
   score: number;
   turn: boolean;
   off?: boolean;
+  frozen?: boolean;
   cards?: CardType[];
 }
 
@@ -143,9 +162,18 @@ export interface PushTarget {
   pos: number;
   color: string;
   shielded?: boolean;
+  mirrored?: boolean;
 }
 
-export type MoveEffectKind = 'fwd' | 'back' | 'ladder' | 'snake' | 'shield-block';
+export type MoveEffectKind =
+  | 'fwd'
+  | 'back'
+  | 'ladder'
+  | 'snake'
+  | 'shield-block'
+  | 'mirror-reflect'
+  | 'swap-pos'
+  | 'boost';
 
 export interface BoardEffect {
   id: number;
@@ -159,6 +187,7 @@ export interface BoardEffect {
 
 export interface ClientViewMessage {
   t: 'view';
+  selfIndex: number;
   phase: GamePhase;
   paused: boolean;
   name: string;
@@ -197,6 +226,7 @@ export interface ClientViewMessage {
     fig: string;
     kind: 'calc' | 'geo';
     opts: string[];
+    eliminatedOpts?: number[];
     timeSec?: number;
   };
   reveal?: { ans: string; pick: number } | null;
@@ -210,6 +240,11 @@ export type SfxName =
   | 'moveBackStep'
   | 'moveBackFinish'
   | 'shieldBlock'
+  | 'mirrorReflect'
+  | 'swapPos'
+  | 'boost'
+  | 'extraTime'
+  | 'fifty'
   | 'ok'
   | 'bad'
   | 'up'
@@ -234,7 +269,7 @@ export interface FloatingFx {
 }
 
 export interface ClientActionMessage {
-  t: 'ask' | 'roll' | 'move' | 'answer' | 'card' | 'react' | 'avatar';
+  t: 'ask' | 'roll' | 'move' | 'answer' | 'card' | 'react' | 'avatar' | 'warmup';
   dir?: 'fwd' | 'back' | 'skip';
   target?: number;
   i?: number;
@@ -242,6 +277,7 @@ export interface ClientActionMessage {
   c?: CardType;
   e?: string;
   avatar?: string;
+  active?: boolean;
 }
 
 export interface MatchRankingItem {

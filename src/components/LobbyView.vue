@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import MatchSettingsPanel from '@/components/MatchSettingsPanel.vue';
 import PlayerAvatar from '@/components/PlayerAvatar.vue';
 import { ARENAS, COLORS, RULES } from '@/constants/game';
@@ -14,6 +14,13 @@ const showSettingsDrawer = ref(false);
 const startErr = ref('');
 
 const s = computed(() => ws.currentSettings);
+
+watch(
+  () => [s.value.warmup, s.value.level, s.value.topics.join(','), s.value.tables.join(','), s.value.fair],
+  () => {
+    game.broadcastLobbyWait();
+  },
+);
 const formattedCode = computed(() => game.roomCode.replace(/(...)(...)/, '$1 $2'));
 const activeArenaTitle = computed(
   () => (ARENAS.find((a) => a[0] === (s.value.arena || 'classic')) || ARENAS[0]!)[1],
@@ -116,6 +123,12 @@ function handleStartFromLobby() {
             <b class="flex-1 text-base font-extrabold">
               {{ ws.findProfile(seat.pid)?.name || 'لاعب' }}
             </b>
+            <small
+              v-if="seat.warmingUp && game.live(seat)"
+              class="rounded-full bg-accent-soft px-2 py-0.5 text-xs font-extrabold text-accent"
+            >
+              🔥 يتدرّب
+            </small>
             <small v-if="!game.live(seat)" class="text-xs text-bad">منقطع</small>
             <button
               type="button"
