@@ -14,7 +14,11 @@ const fsHudLeft = computed(() =>
 const fsHudCenter = computed(() =>
   v.value ? (v.value.turn ? '🎯 دورك الآن!' : `دور ${v.value.cur}`) : '',
 );
-const fsHudRight = computed(() => (v.value ? `🎲 ${v.value.dice ? ar(v.value.dice) : '-'}` : ''));
+const fsHudRight = computed(() => {
+  if (!v.value) return '';
+  const icon = v.value.moveMode === 'speed' ? '⚡' : '🎲';
+  return `${icon} ${v.value.dice ? ar(v.value.dice) : '-'}`;
+});
 </script>
 
 <template>
@@ -36,8 +40,8 @@ const fsHudRight = computed(() => (v.value ? `🎲 ${v.value.dice ? ar(v.value.d
 
     <!-- Active Player Screen (Compact Stats + Question on Top + Hideable Arena) -->
     <div v-else-if="v">
-      <!-- Compact Self Strip + Toggle Arena Button -->
-      <div class="mb-1.5 flex items-center justify-between gap-2">
+      <!-- Compact Self Strip + Local Audio + Toggle Arena Button -->
+      <div class="mb-1.5 flex items-center justify-between gap-1.5">
         <div class="flex min-w-0 flex-1 items-center gap-2 rounded-xl border-2 border-line bg-card px-2.5 py-1.5">
           <span
             class="grid h-8 w-8 shrink-0 place-items-center rounded-full text-base text-white"
@@ -57,16 +61,36 @@ const fsHudRight = computed(() => (v.value ? `🎲 ${v.value.dice ? ar(v.value.d
           </strong>
         </div>
 
+        <!-- Local Sound Toggle when Admin Allows Player Audio (Req #22) -->
+        <button
+          v-if="v.clientAudio !== false"
+          type="button"
+          aria-label="كتم أو تشغيل الصوت على جهازي"
+          :aria-pressed="!client.localMuted"
+          class="grid h-10 w-10 shrink-0 cursor-pointer place-items-center rounded-xl border-2 border-line bg-card text-base transition hover:border-accent"
+          :class="client.localMuted ? 'opacity-55' : ''"
+          @click="client.toggleLocalMuted()"
+        >
+          {{ client.localMuted ? '🔇' : '🔊' }}
+        </button>
+        <span
+          v-else
+          title="الصوت متوقف من المشرف"
+          class="grid h-10 w-10 shrink-0 place-items-center rounded-xl border-2 border-line bg-bg text-sm opacity-50"
+        >
+          🔇
+        </span>
+
         <button
           type="button"
           :aria-expanded="!client.arenaHidden"
-          class="min-h-10 shrink-0 cursor-pointer whitespace-nowrap rounded-xl border-2 border-accent px-3 text-xs font-extrabold transition"
+          class="min-h-10 shrink-0 cursor-pointer whitespace-nowrap rounded-xl border-2 border-accent px-2.5 text-xs font-extrabold transition"
           :class="client.arenaHidden ? 'bg-accent text-accent-ink' : 'bg-card text-ink'"
           @click="client.toggleArena()"
         >
           {{
             client.arenaHidden
-              ? `🗺️ إظهار الساحة (${ar(v.pos)}/${ar(v.last)})`
+              ? `🗺️ إظهار (${ar(v.pos)}/${ar(v.last)})`
               : '🗺️ إخفاء الساحة'
           }}
         </button>

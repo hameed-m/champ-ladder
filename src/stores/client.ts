@@ -1,7 +1,15 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import Peer, { type DataConnection } from 'peerjs';
-import type { ClientActionMessage, ClientViewMessage, FloatingFx } from '@/types/game';
+import {
+  comment,
+  ensureAC,
+  loadVoicesManifest,
+  SFX,
+  stopComment,
+  whistle,
+} from '@/services/audio';
+import type { ClientActionMessage, ClientAudioPacket, ClientViewMessage, FloatingFx } from '@/types/game';
 import { rnd, uid } from '@/utils/format';
 import { getPeerOpts, keepAwake } from '@/stores/game';
 import { useThemeStore } from '@/stores/theme';
@@ -61,6 +69,7 @@ export const useClientStore = defineStore('client', () => {
   const floatingFx = ref<FloatingFx[]>([]);
 
   const arenaHidden = ref(false);
+  const localMuted = ref(false);
   let arenaManualForQ: string | number | null = null;
 
   let peer: Peer | null = null;
@@ -71,6 +80,24 @@ export const useClientStore = defineStore('client', () => {
   let activeCode = '';
   let seated = false;
   let fxSeq = 0;
+
+  function unlockClientAudio(): void {
+    try {
+      ensureAC();
+      void loadVoicesManifest();
+    } catch {
+      // Ignore
+    }
+  }
+
+  function toggleLocalMuted(): void {
+    localMuted.value = !localMuted.value;
+    if (localMuted.value) {
+      stopComment();
+    } else {
+      unlockClientAudio();
+    }
+  }
 
   function setConnectMsg(title: string, message: string, canBack = false): void {
     ws.setView('connect');
@@ -157,6 +184,7 @@ export const useClientStore = defineStore('client', () => {
     viewData.value = null;
     waitName.value = '';
     keepAwake();
+    void loadVoicesManifest();
     setConnectMsg('جارٍ الاتصال…', 'نبحث عن المباراة ' + code, false);
 
     try {
@@ -213,9 +241,24 @@ export const useClientStore = defineStore('client', () => {
     }, 4000);
   }
 
+  function handleAudioPacket(pkt: ClientAudioPacket): void {
+    if (localMuted.value || viewData.value?.clientAudio === false) return;
+    if (pkt.kind === 'sfx' && pkt.sfx && SFX[pkt.sfx]) {
+      SFX[pkt.sfx]();
+    } else if (pkt.kind === 'whistle') {
+      whistle();
+    } else if (pkt.kind === 'comment' && Array.isArray(pkt.parts)) {
+      void comment(pkt.parts, null);
+    }
+  }
+
   function handleData(m: Record<string, unknown>): void {
     lastSeen = Date.now();
     if (m.t === 'ping') return;
+    if (m.t === 'audio') {
+      handleAudioPacket(m as unknown as ClientAudioPacket);
+      return;
+    }
     if (m.t === 'fx') {
       spawnFx(String(m.e || '👏'), String(m.color || '#2f7fd6'));
       return;
@@ -246,6 +289,7 @@ export const useClientStore = defineStore('client', () => {
       seated = false;
       conn = null;
       activeCode = '';
+      stopComment();
       setConnectMsg('خرجت من الغرفة', 'أخرجك المشرف من هذه المباراة.', true);
       return;
     }
@@ -253,6 +297,7 @@ export const useClientStore = defineStore('client', () => {
       conn = null;
       activeCode = '';
       clearInterval(heartbeatTimer);
+      stopComment();
       setConnectMsg('انتهت الجلسة', 'أغلق الجهاز الأساسي الغرفة.', true);
       return;
     }
@@ -263,6 +308,7 @@ export const useClientStore = defineStore('client', () => {
       waitName.value = '';
       viewData.value = v;
       ws.setView('client');
+      if (v.clientAudio === false) stopComment();
       if (v.theme) theme.applyHostDefault(v.theme);
       if (v.buzz) buzz(v.buzz);
 
@@ -279,6 +325,7 @@ export const useClientStore = defineStore('client', () => {
   }
 
   function pickExistingPlayer(pid: string): void {
+    unlockClientAudio();
     try {
       conn?.send({ t: 'pick', pid, token: getClientToken() });
     } catch {
@@ -289,6 +336,7 @@ export const useClientStore = defineStore('client', () => {
   function pickCustomName(name: string): void {
     const clean = name.trim();
     if (!clean) return;
+    unlockClientAudio();
     try {
       conn?.send({ t: 'pick', name: clean, token: getClientToken() });
     } catch {
@@ -298,6 +346,7 @@ export const useClientStore = defineStore('client', () => {
 
   function sendAction(action: ClientActionMessage): void {
     keepAwake();
+    unlockClientAudio();
     try {
       conn?.send(action);
     } catch {
@@ -308,6 +357,7 @@ export const useClientStore = defineStore('client', () => {
   function disconnectAndReset(): void {
     clearInterval(heartbeatTimer);
     activeCode = '';
+    stopComment();
     try {
       peer?.destroy();
     } catch {
@@ -332,8 +382,10 @@ export const useClientStore = defineStore('client', () => {
     viewData,
     floatingFx,
     arenaHidden,
+    localMuted,
     startClient,
     toggleArena,
+    toggleLocalMuted,
     pickExistingPlayer,
     pickCustomName,
     sendAction,

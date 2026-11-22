@@ -5,9 +5,11 @@ import ControllerPanel from '@/components/ControllerPanel.vue';
 import { APP_TITLE_AR, ARENAS, CARD } from '@/constants/game';
 import { captionText, crowdOn, muted, setCrowdOn, setMuted } from '@/services/audio';
 import { useGameStore } from '@/stores/game';
+import { useWorkspaceStore } from '@/stores/workspace';
 import { ar } from '@/utils/format';
 
 const game = useGameStore();
+const ws = useWorkspaceStore();
 
 const arenaTitle = computed(
   () => (ARENAS.find((a) => a[0] === game.board.arena) || ARENAS[0]!)[1],
@@ -15,6 +17,15 @@ const arenaTitle = computed(
 
 const timerPct = computed(() =>
   Math.max(0, Math.min(100, (game.left / (game.total || 1)) * 100)),
+);
+
+const remSec = computed(() => Math.ceil(Math.max(0, game.left) / 1000));
+
+const showHostTimer = computed(
+  () =>
+    game.phase === 'q' ||
+    !!game.raceState ||
+    (game.phase === 'choose' && game.total > 100),
 );
 
 const curDisconnected = computed(() => {
@@ -45,7 +56,10 @@ const fsHudLeft = computed(() => {
   return p ? `دور ${p.emoji} ${p.name} (خانة ${ar(p.pos)}/${ar(game.lastSquare)})` : '';
 });
 
-const fsHudCenter = computed(() => `🎲 ${game.animDice || game.dice ? ar(game.animDice || game.dice) : '-'}`);
+const fsHudCenter = computed(() => {
+  const icon = ws.currentSettings.moveMode === 'speed' ? '⚡' : '🎲';
+  return `${icon} ${game.animDice || game.dice ? ar(game.animDice || game.dice) : '-'}`;
+});
 </script>
 
 <template>
@@ -59,7 +73,24 @@ const fsHudCenter = computed(() => `🎲 ${game.animDice || game.dice ? ar(game.
         </span>
       </div>
 
-      <div class="ms-auto flex items-center gap-2">
+      <div class="ms-auto flex flex-wrap items-center gap-2">
+        <!-- Admin Toggle for Players' Device Audio (Req #22) -->
+        <button
+          v-if="game.mode === 'online'"
+          type="button"
+          title="تشغيل أو إيقاف الصوت على أجهزة اللاعبين"
+          :aria-pressed="ws.currentSettings.clientAudio !== false"
+          class="min-h-10 cursor-pointer rounded-xl border-2 px-3 text-xs font-extrabold transition"
+          :class="
+            ws.currentSettings.clientAudio !== false
+              ? 'border-accent bg-accent-soft text-ink'
+              : 'border-line bg-card text-ink/65'
+          "
+          @click="game.toggleClientAudio()"
+        >
+          {{ ws.currentSettings.clientAudio !== false ? '📱🔊 أصوات اللاعبين' : '📱🔇 أصوات اللاعبين' }}
+        </button>
+
         <button
           type="button"
           aria-label="صوت الجمهور"
@@ -144,7 +175,13 @@ const fsHudCenter = computed(() => `🎲 ${game.animDice || game.dice ? ar(game.
               class="grid h-14 w-14 shrink-0 place-items-center rounded-2xl border-[3px] border-accent bg-bg font-display text-3xl text-ink"
               aria-live="polite"
             >
-              {{ game.animDice || game.dice ? ar(game.animDice || game.dice) : '🎲' }}
+              {{
+                game.animDice || game.dice
+                  ? ar(game.animDice || game.dice)
+                  : ws.currentSettings.moveMode === 'speed'
+                    ? '⚡'
+                    : '🎲'
+              }}
             </div>
           </div>
 
@@ -181,12 +218,21 @@ const fsHudCenter = computed(() => `🎲 ${game.animDice || game.dice ? ar(game.
             }}
           </p>
 
-          <!-- Timer Bar -->
-          <div
-            v-if="game.phase === 'q' || game.raceState"
-            class="mt-2 h-2.5 overflow-hidden rounded-full bg-line"
-          >
-            <div class="h-full bg-accent transition-[width] duration-100 ease-linear" :style="{ width: timerPct + '%' }" />
+          <!-- Timer Bar (Question, Race, AND Movement Decision) -->
+          <div v-if="showHostTimer" class="mt-2 space-y-1">
+            <div class="flex items-center justify-between text-xs font-extrabold">
+              <span class="text-ink/75">
+                {{ game.phase === 'choose' ? '⏱️ وقت قرار الحركة' : '⏱️ الوقت المتبقي' }}
+              </span>
+              <span :class="remSec <= 3 ? 'text-bad' : 'text-accent'">{{ ar(remSec) }} ث</span>
+            </div>
+            <div class="h-2.5 overflow-hidden rounded-full bg-line">
+              <div
+                class="h-full transition-[width] duration-100 ease-linear"
+                :class="remSec <= 3 ? 'bg-bad' : 'bg-accent'"
+                :style="{ width: timerPct + '%' }"
+              />
+            </div>
           </div>
 
           <!-- Status Message -->

@@ -40,6 +40,9 @@ function ensureSetDefaults(setObj: Partial<RoomSettings> | undefined): RoomSetti
   if (!Array.isArray(base.tables)) base.tables = [...DEF_SETTINGS.tables];
   if (!THEMES.some((t) => t[0] === base.theme)) base.theme = 'green';
   if (!ARENAS.some((a) => a[0] === base.arena)) base.arena = 'classic';
+  if (base.moveMode !== 'dice' && base.moveMode !== 'speed') base.moveMode = 'dice';
+  if (![0, 5, 10, 15].includes(base.decisionTime)) base.decisionTime = 10;
+  if (typeof base.clientAudio !== 'boolean') base.clientAudio = true;
   if (!canNet()) base.mode = 'device';
   return base;
 }

@@ -6,8 +6,10 @@ import { CARD, COLORS, LEVELS, MAXP, REACT } from '@/constants/game';
 import {
   captionText,
   comment,
+  type CommentPart,
   crowdFx,
   ensureAC,
+  loadVoicesManifest,
   preloadAudio,
   SFX,
   startCrowd,
@@ -24,6 +26,7 @@ import type {
   BoardPlayerView,
   CardType,
   ClientActionMessage,
+  ClientAudioPacket,
   ClientViewMessage,
   FloatingFx,
   GamePhase,
@@ -76,6 +79,15 @@ export async function keepAwake(): Promise<void> {
   } catch {
     // Ignore
   }
+}
+
+function speedStepsFor(ratio: number): number {
+  if (ratio >= 0.8) return 6;
+  if (ratio >= 0.65) return 5;
+  if (ratio >= 0.5) return 4;
+  if (ratio >= 0.35) return 3;
+  if (ratio >= 0.2) return 2;
+  return 1;
 }
 
 export const useGameStore = defineStore('game', () => {
@@ -155,6 +167,37 @@ export const useGameStore = defineStore('game', () => {
     }, 2400);
   }
 
+  /* ---------- Audio Broadcast Helpers (Req #22) ---------- */
+  function broadcastAudio(packet: Omit<ClientAudioPacket, 't'>): void {
+    if (mode.value !== 'online' || ws.currentSettings.clientAudio === false) return;
+    const payload: ClientAudioPacket = { t: 'audio', ...packet };
+    players.value.forEach((_, idx) => pushSocketMsg(idx, payload));
+  }
+
+  function playSfx(name: NonNullable<ClientAudioPacket['sfx']>): void {
+    SFX[name]();
+    broadcastAudio({ kind: 'sfx', sfx: name });
+  }
+
+  function playWhistle(): void {
+    whistle();
+    broadcastAudio({ kind: 'whistle' });
+  }
+
+  function playComment(parts: CommentPart[], cap?: string | null): Promise<void> {
+    const cleanParts = parts.map((pt) =>
+      typeof pt === 'string' ? pt : { i: pt.i, name: pt.name, named: pt.named },
+    );
+    broadcastAudio({ kind: 'comment', parts: cleanParts });
+    return comment(parts, cap);
+  }
+
+  function toggleClientAudio(): void {
+    ws.currentSettings.clientAudio = ws.currentSettings.clientAudio === false;
+    ws.save();
+    broadcastState();
+  }
+
   function rankOf(idx: number): number {
     return (
       [...players.value]
@@ -196,6 +239,8 @@ export const useGameStore = defineStore('game', () => {
       dice: animDice.value || dice.value || 0,
       canFwd,
       targets,
+      moveMode: ws.currentSettings.moveMode || 'dice',
+      clientAudio: ws.currentSettings.clientAudio !== false,
       theme: ws.currentSettings.theme || 'green',
       board: {
         n: board.value.n,
@@ -233,6 +278,7 @@ export const useGameStore = defineStore('game', () => {
         fig: activeQ.fig || '',
         kind: activeQ.kind,
         opts: activeQ.opts,
+        timeSec: activeQ.timeSec,
       };
       v.reveal = activeQ.reveal ? { ans: activeQ.ans, pick: activeQ.reveal.pick } : null;
     }
@@ -522,11 +568,11 @@ export const useGameStore = defineStore('game', () => {
     ws.setView('game');
     setTurn();
     ensureAC();
-    preloadAudio();
+    void loadVoicesManifest().then(() => preloadAudio());
     keepAwake();
     startCrowd();
-    whistle();
-    comment(['welcome_0'], 'أهلًا بكم في تحدي الأبطال!');
+    playWhistle();
+    playComment(['welcome_0'], 'أهلًا بكم في تحدي الأبطال!');
   }
 
   function toMenu(): void {
@@ -579,12 +625,17 @@ export const useGameStore = defineStore('game', () => {
     lastSec = 0;
     tid = window.setInterval(() => {
       const curP = players.value[cur.value];
-      if (paused.value || (mode.value === 'online' && phase.value === 'q' && curP && !connected(curP))) return;
+      const pauseForDisconnect =
+        mode.value === 'online' &&
+        (phase.value === 'q' || phase.value === 'choose') &&
+        curP &&
+        !connected(curP);
+      if (paused.value || pauseForDisconnect) return;
       left.value = Math.max(0, left.value - 100);
       const sec = left.value / 1000;
       if (sec > 0 && sec <= 3 && Math.ceil(sec) !== lastSec) {
         lastSec = Math.ceil(sec);
-        SFX.warn();
+        playSfx('warn');
       }
       if (left.value <= 0) {
         clearInterval(tid);
@@ -594,6 +645,7 @@ export const useGameStore = defineStore('game', () => {
   }
 
   function setTurn(): void {
+    clearInterval(tid);
     phase.value = 'ready';
     q.value = null;
     dice.value = 0;
@@ -614,14 +666,52 @@ export const useGameStore = defineStore('game', () => {
     const nextQ = makeQuestionFor(p);
     q.value = nextQ;
     phase.value = 'q';
-    let ms = ((LEVELS[nextQ.level]?.[1] ?? 15) + (nextQ.extra || 0)) * 1000;
+    let ms = (nextQ.timeSec ?? ((LEVELS[nextQ.level]?.[1] ?? 18) + (nextQ.extra || 0))) * 1000;
     if (p.frozen) {
-      ms /= 2;
+      ms = Math.max(5000, Math.round(ms / 2));
       p.frozen = false;
     }
-    setMsg('أجب إجابة صحيحة لترمي النرد وتتقدم!');
+    const moveHint =
+      ws.currentSettings.moveMode === 'speed'
+        ? 'أجب بأسرع وقت لتحصل على خطوات أكثر (١–٦ خطوات)!'
+        : 'أجب إجابة صحيحة لترمي النرد وتتقدم!';
+    setMsg(moveHint);
     runTimer(ms, () => answer(-1));
     broadcastState();
+  }
+
+  async function enterMoveDecisionOrAdvance(p: PlayerRuntime, steps: number, ep: number): Promise<void> {
+    if (ep !== epoch || !(await gate(ep))) return;
+    const rem = lastSquare.value - p.pos;
+    const over = steps > rem;
+    const targets = getPushTargets(cur.value);
+
+    if (ws.currentSettings.pushback && targets.length > 0) {
+      phase.value = 'choose';
+      const decSec = ws.currentSettings.decisionTime;
+      const timerNote = decSec > 0 ? ` (${ar(decSec)} ثوانٍ للاختيار)` : '';
+      if (over) {
+        setMsg(`🎯 لديك ${ar(steps)} خطوات (أكبر من المتبقي ${ar(rem)}). يمكنك إرجاع خصم أو تخطي الدور!${timerNote}`, 'bad');
+      } else {
+        setMsg(`🎯 لديك ${ar(steps)} خطوات! اختر: التقدم للأمام أو إرجاع خصم${timerNote}`, 'ok');
+      }
+      p.buzz = 'turn';
+      if (decSec > 0) {
+        runTimer(decSec * 1000, () => {
+          if (phase.value === 'choose' && ep === epoch) {
+            void executeForwardMove(p, steps, ep);
+          }
+        });
+      } else {
+        clearInterval(tid);
+        left.value = 0;
+        total.value = 1;
+      }
+      broadcastState();
+      return;
+    }
+
+    await executeForwardMove(p, steps, ep);
   }
 
   async function onRoll(): Promise<void> {
@@ -633,48 +723,33 @@ export const useGameStore = defineStore('game', () => {
 
     const anim = (async () => {
       for (let i = 0; i < 9; i++) {
-        SFX.tick();
+        playSfx('tick');
         animDice.value = rnd(1, 6);
         await sleep(70);
       }
       animDice.value = null;
     })();
 
-    await within(Promise.all([anim, comment([p, 'roll'], `${p.name} يرمي النرد!`)]), 4500);
+    await within(Promise.all([anim, playComment([p, 'roll'], `${p.name} يرمي النرد!`)]), 4500);
     if (!(await gate(ep))) return;
 
     dice.value = rnd(1, 6) + (p.dbl ? rnd(1, 6) : 0);
     p.dbl = false;
     broadcastState();
-    await within(comment(['n' + Math.min(100, dice.value)]), 1500);
+    await within(playComment(['n' + Math.min(100, dice.value)]), 1500);
     if (!(await gate(ep))) return;
 
-    const rem = lastSquare.value - p.pos;
-    const over = dice.value > rem;
-    const targets = getPushTargets(cur.value);
-
-    if (ws.currentSettings.pushback && targets.length > 0) {
-      phase.value = 'choose';
-      if (over) {
-        setMsg(`🎲 ظهر ${ar(dice.value)} (أكبر من المتبقي ${ar(rem)}). يمكنك إرجاع خصم أو تخطي الدور!`, 'bad');
-      } else {
-        setMsg(`🎲 ظهر ${ar(dice.value)}! اختر: التقدم للأمام أو إرجاع خصم ${ar(dice.value)} خانات`, 'ok');
-      }
-      p.buzz = 'turn';
-      broadcastState();
-      return;
-    }
-
-    await executeForwardMove(p, dice.value, ep);
+    await enterMoveDecisionOrAdvance(p, dice.value, ep);
   }
 
   async function executeForwardMove(p: PlayerRuntime, d: number, ep: number): Promise<void> {
+    clearInterval(tid);
     phase.value = 'busy';
     broadcastState();
     const rem = lastSquare.value - p.pos;
     if (d > rem) {
-      SFX.bad();
-      setMsg(`🎲 ظهر ${ar(d)} وتحتاج إلى ${ar(rem)} بالضبط للوصول للنهاية! انتظر الدور القادم.`, 'bad');
+      playSfx('bad');
+      setMsg(`🎲 لديك ${ar(d)} خطوات وتحتاج إلى ${ar(rem)} بالضبط للوصول للنهاية! انتظر الدور القادم.`, 'bad');
       crowdFx('aww', 0.55);
       broadcastState();
       await sleep(2200);
@@ -690,18 +765,19 @@ export const useGameStore = defineStore('game', () => {
   }
 
   async function executePushOpponent(actor: PlayerRuntime, targetIdx: number, d: number, ep: number): Promise<void> {
+    clearInterval(tid);
     const target = players.value[targetIdx];
     if (!target || target === actor || target.pos <= 1) return;
     phase.value = 'busy';
     setMsg(`↩️ ${actor.name} قرر إرجاع ${target.name} ${ar(d)} خانات للخلف!`, 'ok');
-    SFX.down();
+    playSfx('down');
     crowdFx('roar', 0.7);
     broadcastState();
     await sleep(900);
     if (ep !== epoch || !(await gate(ep))) return;
     await stepBackTo(target, d, ep);
     if (ep !== epoch || !(await gate(ep))) return;
-    await resolveSquareEffects(target, ep);
+    await resolveSquareEffects(target, ep, 0);
     if (ep !== epoch || won.value || !(await gate(ep))) return;
     cur.value = (cur.value + 1) % players.value.length;
     setTurn();
@@ -722,6 +798,8 @@ export const useGameStore = defineStore('game', () => {
       return;
     }
     if (m.t === 'move' && phase.value === 'choose' && i === cur.value) {
+      clearInterval(tid);
+      phase.value = 'busy';
       const actor = players.value[cur.value]!;
       if (m.dir === 'fwd' || m.dir === 'skip') {
         void executeForwardMove(actor, dice.value, epoch);
@@ -731,8 +809,10 @@ export const useGameStore = defineStore('game', () => {
         const ti = m.target;
         if (ti >= 0 && ti < players.value.length && ti !== cur.value && players.value[ti]!.pos > 1) {
           void executePushOpponent(actor, ti, dice.value, epoch);
+          return;
         }
       }
+      phase.value = 'choose';
       return;
     }
     if (m.t === 'answer' && typeof m.i === 'number') {
@@ -763,21 +843,26 @@ export const useGameStore = defineStore('game', () => {
     if (!p) return;
     const at = p.cards.indexOf(c);
     if (at < 0) return;
-    if (c === 'double' && phase.value === 'roll' && !p.dbl) {
+    const isSpeed = ws.currentSettings.moveMode === 'speed';
+    if (
+      c === 'double' &&
+      !p.dbl &&
+      ((!isSpeed && phase.value === 'roll') || (isSpeed && (phase.value === 'ready' || phase.value === 'q')))
+    ) {
       p.cards.splice(at, 1);
       p.dbl = true;
-      comment(['double'], 'نرد مضاعف!');
-      setMsg('🎲 ستُرمى نردان في هذا الدور', 'ok');
+      playComment(['double'], isSpeed ? 'مضاعفة الخطوات!' : 'نرد مضاعف!');
+      setMsg(isSpeed ? '⚡ ستتضاعف خطوات سرعتك في هذا الدور!' : '🎲 ستُرمى نردان في هذا الدور', 'ok');
       broadcastState();
     } else if (c === 'freeze' && (phase.value === 'ready' || phase.value === 'roll') && players.value.length > 1) {
       p.cards.splice(at, 1);
       players.value[(cur.value + 1) % players.value.length]!.frozen = true;
-      comment(['freeze'], 'تجميد! وقت اللاعب التالي نصف!');
+      playComment(['freeze'], 'تجميد! وقت اللاعب التالي نصف!');
       setMsg('❄️ وقت اللاعب التالي نصف');
       broadcastState();
     } else if (c === 'swap' && phase.value === 'q' && q.value && !q.value.reveal) {
       p.cards.splice(at, 1);
-      comment(['swap'], 'تبديل السؤال!');
+      playComment(['swap'], 'تبديل السؤال!');
       ask();
     }
   }
@@ -797,6 +882,7 @@ export const useGameStore = defineStore('game', () => {
     const activeQ = q.value;
     const leftSec = Math.max(0, left.value / 1000);
     const totalSec = (total.value || 1000) / 1000;
+    const ratio = leftSec / totalSec;
     const ok = i >= 0 && activeQ.opts[i] === activeQ.ans;
     activeQ.reveal = { pick: i };
     ws.recordAnswer(p.pid, activeQ, ok);
@@ -807,20 +893,28 @@ export const useGameStore = defineStore('game', () => {
       p.wrun = 0;
       if (p.streak % 3 === 0) p.adj++;
       const hot = p.streak >= 3;
-      const fast = leftSec / totalSec > 0.65;
-      const pts = 10 + activeQ.level * 5 + Math.round((leftSec / totalSec) * 5) + (hot ? 5 : 0);
+      const fast = ratio > 0.65;
+      const pts = 10 + activeQ.level * 5 + Math.round(ratio * 5) + (hot ? 5 : 0);
       p.score += pts;
       p.buzz = 'good';
       const card = p.streak % 3 === 0 ? gainCard(p) : false;
+
+      const isSpeed = ws.currentSettings.moveMode === 'speed';
+      const earnedSteps = isSpeed ? speedStepsFor(ratio) * (p.dbl ? 2 : 1) : 0;
+      if (isSpeed) p.dbl = false;
+
       setMsg(
-        `صحيح! +${ar(pts)} نقطة` + (hot ? ' 🔥' : '') + (card ? ` ${CARD[card][0]} بطاقة ${CARD[card][1]}` : ''),
+        `صحيح! +${ar(pts)} نقطة` +
+          (isSpeed ? ` · ⚡ ${ar(earnedSteps)} خطوات` : '') +
+          (hot ? ' 🔥' : '') +
+          (card ? ` ${CARD[card][0]} بطاقة ${CARD[card][1]}` : ''),
         'ok',
       );
-      SFX.ok();
+      playSfx('ok');
       crowdFx(hot ? 'chant' : 'cheer', hot ? 0.8 : 0.65);
       broadcastState();
       await within(
-        comment(
+        playComment(
           [hot ? 'streak' : fast ? 'fast' : 'correct'],
           hot ? 'سلسلة نارية! الجمهور يشتعل!' : fast ? 'بسرعة البرق!' : 'إجابة صحيحة! يا سلام!',
         ),
@@ -828,6 +922,16 @@ export const useGameStore = defineStore('game', () => {
       );
       if (!(await gate(ep))) return;
       q.value = null;
+
+      if (isSpeed) {
+        dice.value = earnedSteps;
+        broadcastState();
+        await within(playComment(['n' + Math.min(100, earnedSteps)]), 1500);
+        if (!(await gate(ep))) return;
+        await enterMoveDecisionOrAdvance(p, earnedSteps, ep);
+        return;
+      }
+
       phase.value = 'roll';
       setMsg('أحسنت! ارمِ النرد الآن 🎲', 'ok');
       p.buzz = 'turn';
@@ -838,19 +942,20 @@ export const useGameStore = defineStore('game', () => {
       p.streak = 0;
       p.wrun++;
       p.buzz = 'bad';
+      p.dbl = false;
       if (p.wrun === 2) {
         p.adj--;
         p.wrun = 0;
       }
-      SFX.bad();
+      playSfx('bad');
       setMsg((i < 0 ? 'انتهى الوقت! ' : 'إجابة خاطئة! ') + `الصحيح: ${activeQ.show}`, 'bad');
       crowdFx('aww', 0.6);
-      if (i < 0) whistle();
+      if (i < 0) playWhistle();
       broadcastState();
       await within(
         Promise.all([
           sleep(2200),
-          comment(
+          playComment(
             [i < 0 ? 'timeout' : 'wrong'],
             i < 0 ? 'انتهى الوقت! الحكم يطلق الصافرة!' : 'يا خسارة! الكرة خارج المرمى!',
           ),
@@ -861,7 +966,7 @@ export const useGameStore = defineStore('game', () => {
       if (ws.currentSettings.steal && mode.value === 'online' && players.value.length > 1) {
         const ids = players.value.filter((x) => x.i !== cur.value && connected(x)).map((x) => x.i);
         if (ids.length) {
-          comment(['steal'], 'الفرصة مفتوحة! من يخطف الإجابة؟');
+          playComment(['steal'], 'الفرصة مفتوحة! من يخطف الإجابة؟');
           const w = await runRace(ids, '⚡ سرقة الإجابة! الأسرع يأخذ ١٠ نقاط', 10000);
           if (ep !== epoch) return;
           if (w >= 0) {
@@ -871,7 +976,7 @@ export const useGameStore = defineStore('game', () => {
             setMsg(`⚡ ${wp.name} خطف ١٠ نقاط!`, 'ok');
             crowdFx('cheer', 0.6);
             broadcastState();
-            await within(comment(['stolen'], `${wp.name} خطفها!`), 3000);
+            await within(playComment(['stolen'], `${wp.name} خطفها!`), 3000);
           }
         }
       }
@@ -932,7 +1037,7 @@ export const useGameStore = defineStore('game', () => {
   async function stepTo(p: PlayerRuntime, k: number, ep: number): Promise<void> {
     for (let i = 0; i < k && p.pos < lastSquare.value; i++) {
       p.pos++;
-      SFX.step();
+      playSfx('step');
       broadcastState();
       await sleep(260);
       if (ep !== epoch) return;
@@ -942,7 +1047,7 @@ export const useGameStore = defineStore('game', () => {
   async function stepBackTo(p: PlayerRuntime, k: number, ep: number): Promise<void> {
     for (let i = 0; i < k && p.pos > 1; i++) {
       p.pos--;
-      SFX.step();
+      playSfx('step');
       broadcastState();
       await sleep(260);
       if (ep !== epoch) return;
@@ -960,32 +1065,33 @@ export const useGameStore = defineStore('game', () => {
   async function advance(p: PlayerRuntime, d: number, ep: number): Promise<void> {
     await stepTo(p, d, ep);
     if (ep !== epoch || finishIf(p)) return;
-    await resolveSquareEffects(p, ep);
+    await resolveSquareEffects(p, ep, 0);
   }
 
-  async function resolveSquareEffects(p: PlayerRuntime, ep: number): Promise<void> {
-    if (ep !== epoch || finishIf(p)) return;
+  async function resolveSquareEffects(p: PlayerRuntime, ep: number, depth = 0): Promise<void> {
+    if (ep !== epoch || finishIf(p) || depth > 5) return;
     const from = p.pos;
-    const to = board.value.lad[from] || board.value.snk[from];
-    const up = !!board.value.lad[from];
-    const shield = !!to && !up && p.cards.includes('shield');
+    const ladTo = board.value.lad[from];
+    const snkTo = board.value.snk[from];
+    const to = ladTo ?? snkTo;
+    const up = ladTo !== undefined;
+    const shield = to !== undefined && !up && p.cards.includes('shield');
 
     if (shield) {
       p.cards.splice(p.cards.indexOf('shield'), 1);
       setMsg(`🛡️ الدرع أنقذ ${p.name} من الحية!`, 'ok');
       crowdFx('cheer', 0.6);
-      SFX.up();
+      playSfx('up');
       broadcastState();
-      await within(comment(['shield'], 'الدرع ينقذه من الحية!'), 3500);
-    } else if (to) {
+      await within(playComment(['shield'], 'الدرع ينقذه من الحية!'), 3500);
+    } else if (to !== undefined) {
       setMsg(up ? `🪜 سلّم! ${p.name} يصعد إلى ${ar(to)}` : `🐍 حية! ${p.name} ينزل إلى ${ar(to)}`, up ? 'ok' : 'bad');
       p.buzz = up ? 'good' : 'bad';
-      if (up) SFX.up();
-      else SFX.down();
+      playSfx(up ? 'up' : 'down');
       crowdFx(up ? 'cheer' : 'aww', 0.65);
       broadcastState();
       const c = within(
-        comment(
+        playComment(
           [up ? 'ladder' : 'snake', 'n' + to],
           up ? `صعود صاروخي إلى الخانة ${ar(to)}!` : `يا للهول! الحية تُنزله إلى الخانة ${ar(to)}!`,
         ),
@@ -997,8 +1103,12 @@ export const useGameStore = defineStore('game', () => {
       broadcastState();
       await Promise.all([sleep(700), c]);
       if (ep !== epoch || finishIf(p)) return;
+      if (board.value.lad[p.pos] !== undefined || board.value.snk[p.pos] !== undefined) {
+        await resolveSquareEffects(p, ep, depth + 1);
+        return;
+      }
     } else {
-      await within(comment(['move', 'n' + from], `${p.name} في الخانة ${ar(from)}!`), 3500);
+      await within(playComment(['move', 'n' + from], `${p.name} في الخانة ${ar(from)}!`), 3500);
     }
 
     if (!(await gate(ep))) return;
@@ -1008,13 +1118,13 @@ export const useGameStore = defineStore('game', () => {
       if (!c) p.score += 5;
       setMsg(c ? `🎁 مفاجأة لـ ${p.name}! ${CARD[c][0]} بطاقة ${CARD[c][1]}` : `🎁 مفاجأة لـ ${p.name}! +٥ نقاط`, 'ok');
       broadcastState();
-      await within(comment(['surprise'], 'مفاجأة!'), 2600);
+      await within(playComment(['surprise'], 'مفاجأة!'), 2600);
       if (!(await gate(ep))) return;
     }
 
     if (board.value.allq.includes(p.pos) && ws.currentSettings.allq && mode.value === 'online' && players.value.length > 1) {
       const ids = players.value.filter(connected).map((x) => x.i);
-      comment(['all'], 'سؤال للجميع! الأسرع يفوز!');
+      playComment(['all'], 'سؤال للجميع! الأسرع يفوز!');
       const w = await runRace(ids, '⭐ سؤال الجميع! الأسرع يتقدم ٣ خانات', 14000);
       if (ep !== epoch) return;
       if (w >= 0) {
@@ -1024,10 +1134,13 @@ export const useGameStore = defineStore('game', () => {
         setMsg(`⭐ ${wp.name} كان الأسرع!`, 'ok');
         crowdFx('cheer', 0.7);
         broadcastState();
-        await within(comment(['allwin'], `${wp.name} الأسرع!`), 3000);
+        await within(playComment(['allwin'], `${wp.name} الأسرع!`), 3000);
         if (wp.pos + 3 <= lastSquare.value) {
           await stepTo(wp, 3, ep);
           if (ep !== epoch || finishIf(wp)) return;
+          /* Fix Req #1: Also trigger ladders/snakes/effects after bonus steps */
+          await resolveSquareEffects(wp, ep, depth + 1);
+          if (ep !== epoch || won.value) return;
         }
       }
       if (!(await gate(ep))) return;
@@ -1038,7 +1151,7 @@ export const useGameStore = defineStore('game', () => {
         ? players.value.find((x) => x !== p && x.pos === p.pos && connected(x))
         : null;
     if (rival) {
-      comment(['penalty'], 'ضربة جزاء! مواجهة مباشرة!');
+      playComment(['penalty'], 'ضربة جزاء! مواجهة مباشرة!');
       const w = await runRace([p.i, rival.i], `⚽ ضربة جزاء: ${p.name} ضد ${rival.name}`, 12000);
       if (ep !== epoch) return;
       if (w >= 0) {
@@ -1048,11 +1161,12 @@ export const useGameStore = defineStore('game', () => {
         setMsg(`⚽ ${wp.name} فاز بالمواجهة!`, 'ok');
         crowdFx('cheer', 0.7);
         broadcastState();
-        await within(comment(['penwin'], `${wp.name} يسجل!`), 3000);
+        await within(playComment(['penwin'], `${wp.name} يسجل!`), 3000);
         if (wp.pos + 2 <= lastSquare.value) {
           await stepTo(wp, 2, ep);
-          if (ep !== epoch) return;
-          finishIf(wp);
+          if (ep !== epoch || finishIf(wp)) return;
+          /* Fix Req #1: Also trigger ladders/snakes/effects after penalty bonus steps */
+          await resolveSquareEffects(wp, ep, depth + 1);
         }
       }
     }
@@ -1063,11 +1177,11 @@ export const useGameStore = defineStore('game', () => {
     clearInterval(tid);
     phase.value = 'end';
     winnerName.value = p.name;
-    SFX.win();
-    whistle();
+    playSfx('win');
+    playWhistle();
     crowdFx('roar', 0.95);
     setMsg(`🏆 ${p.name} يفوز!`, 'ok');
-    comment(['win'], `هدف! ${p.name} يفوز بالمباراة!`);
+    playComment(['win'], `هدف! ${p.name} يفوز بالمباراة!`);
 
     players.value.forEach((x) => {
       const pr = ws.findProfile(x.pid);
@@ -1195,5 +1309,6 @@ export const useGameStore = defineStore('game', () => {
     skipTurn,
     switchToLocal,
     changeLiveArena,
+    toggleClientAudio,
   };
 });

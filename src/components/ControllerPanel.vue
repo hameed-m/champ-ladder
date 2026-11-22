@@ -14,13 +14,27 @@ const emit = defineEmits<{
 
 const sentQid = ref<number | null>(null);
 const barPct = ref(100);
+const remSec = ref(0);
 let timerId = 0;
 let baseLeft = 0;
 let baseTotal = 1;
 let baseAt = 0;
 
+const hasActiveTimer = computed(
+  () =>
+    (!!props.view.q && !props.view.reveal) ||
+    (props.view.phase === 'choose' && props.view.turn && props.view.total > 100),
+);
+
 watch(
-  () => [props.view.qid, props.view.left, props.view.total, props.view.paused, props.view.reveal],
+  () => [
+    props.view.qid,
+    props.view.phase,
+    props.view.left,
+    props.view.total,
+    props.view.paused,
+    props.view.reveal,
+  ],
   () => {
     if (props.view.qid !== sentQid.value) {
       sentQid.value = null;
@@ -29,12 +43,14 @@ watch(
     baseTotal = props.view.total || 1;
     baseAt = performance.now();
     barPct.value = Math.max(0, Math.min(100, (baseLeft / baseTotal) * 100));
+    remSec.value = Math.ceil(Math.max(0, baseLeft) / 1000);
 
     clearInterval(timerId);
-    if (props.view.q && !props.view.paused && !props.view.reveal) {
+    if (hasActiveTimer.value && !props.view.paused) {
       timerId = window.setInterval(() => {
-        const rem = baseLeft - (performance.now() - baseAt);
+        const rem = Math.max(0, baseLeft - (performance.now() - baseAt));
         barPct.value = Math.max(0, Math.min(100, (rem / baseTotal) * 100));
+        remSec.value = Math.ceil(rem / 1000);
       }, 100);
     }
   },
@@ -50,9 +66,18 @@ const canChoose = computed(() => props.view.turn && props.view.phase === 'choose
 function isCardUsable(c: CardType): boolean {
   if (!props.view.turn || props.view.paused) return false;
   if (c === 'freeze') return props.view.phase === 'ready' || props.view.phase === 'roll';
-  if (c === 'double') return props.view.phase === 'roll';
+  if (c === 'double') {
+    return props.view.moveMode === 'speed'
+      ? props.view.phase === 'ready' || props.view.phase === 'q'
+      : props.view.phase === 'roll';
+  }
   if (c === 'swap') return props.view.phase === 'q';
   return false;
+}
+
+function cardLabel(c: CardType): string {
+  if (c === 'double' && props.view.moveMode === 'speed') return '⚡ خطوات مضاعفة';
+  return `${CARD[c][0]} ${CARD[c][1]}`;
 }
 
 function submitAnswer(idx: number) {
@@ -75,7 +100,7 @@ const isArabicText = (s: string) => /[ء-ي]/.test(s);
 
 <template>
   <div>
-    <!-- Who / Dice Header -->
+    <!-- Who / Steps Badge Header -->
     <div class="flex items-center justify-between gap-2.5">
       <b class="flex items-center gap-2 text-lg font-extrabold sm:text-xl">
         <template v-if="view.phase === 'end'">🏆 {{ view.won }} فاز</template>
@@ -90,7 +115,13 @@ const isArabicText = (s: string) => /[ء-ي]/.test(s);
         class="grid h-14 w-14 shrink-0 place-items-center rounded-2xl border-[3px] border-accent bg-bg font-display text-3xl text-ink"
         aria-live="polite"
       >
-        {{ (view.turn || view.phase === 'choose') && view.dice ? ar(view.dice) : '🎲' }}
+        {{
+          (view.turn || view.phase === 'choose') && view.dice
+            ? ar(view.dice)
+            : view.moveMode === 'speed'
+              ? '⚡'
+              : '🎲'
+        }}
       </div>
     </div>
 
@@ -109,7 +140,7 @@ const isArabicText = (s: string) => /[ء-ي]/.test(s);
       ابدأ الدور — اعرض السؤال ❓
     </button>
 
-    <!-- Roll Dice Button -->
+    <!-- Roll Dice Button (Dice mode only) -->
     <button
       v-if="canRoll"
       type="button"
@@ -119,8 +150,22 @@ const isArabicText = (s: string) => /[ء-ي]/.test(s);
       ارمِ النرد 🎲
     </button>
 
-    <!-- Choose Forward vs Push Opponent -->
+    <!-- Choose Forward vs Push Opponent + Decision Timer (Req #6) -->
     <div v-if="canChoose" class="mt-3 grid gap-2.5">
+      <div v-if="view.total > 100" class="space-y-1">
+        <div class="flex items-center justify-between text-xs font-extrabold">
+          <span class="text-ink/80">⏱️ وقت اختيار الحركة</span>
+          <span :class="remSec <= 3 ? 'text-bad' : 'text-accent'">{{ ar(remSec) }} ث</span>
+        </div>
+        <div class="h-2.5 overflow-hidden rounded-full bg-line">
+          <div
+            class="h-full transition-[width] duration-100 ease-linear"
+            :class="remSec <= 3 ? 'bg-bad' : 'bg-accent'"
+            :style="{ width: barPct + '%' }"
+          />
+        </div>
+      </div>
+
       <button
         v-if="view.canFwd"
         type="button"
@@ -164,7 +209,7 @@ const isArabicText = (s: string) => /[ء-ي]/.test(s);
         class="inline-flex min-h-9 cursor-pointer items-center gap-1 rounded-xl border-2 border-line bg-card px-3 text-sm font-extrabold text-ink transition hover:border-accent disabled:cursor-not-allowed disabled:opacity-45"
         @click="emit('action', { t: 'card', c })"
       >
-        {{ CARD[c][0] }} {{ CARD[c][1] }}
+        {{ cardLabel(c) }}
       </button>
     </div>
 
@@ -187,10 +232,19 @@ const isArabicText = (s: string) => /[ء-ي]/.test(s);
         {{ view.q.text }}
       </div>
 
-      <!-- Countdown Progress Bar -->
+      <!-- Countdown Progress Bar + Remaining Seconds -->
+      <div class="mb-1 flex items-center justify-between text-xs font-extrabold">
+        <span class="text-ink/75">
+          {{ view.moveMode === 'speed' ? '⚡ أجب أسرع لخطوات أكثر' : '⏱️ الوقت المتبقي' }}
+        </span>
+        <span :class="remSec <= 3 && !view.reveal ? 'text-bad' : 'text-accent'">
+          {{ ar(remSec) }} ث
+        </span>
+      </div>
       <div class="h-2.5 overflow-hidden rounded-full bg-line">
         <div
-          class="h-full bg-accent transition-[width] duration-100 ease-linear"
+          class="h-full transition-[width] duration-100 ease-linear"
+          :class="remSec <= 3 && !view.reveal ? 'bg-bad' : 'bg-accent'"
           :style="{ width: barPct + '%' }"
         />
       </div>

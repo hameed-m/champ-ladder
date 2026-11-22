@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import MatchSettingsPanel from '@/components/MatchSettingsPanel.vue';
 import {
   ALLT,
   ARENAS,
   AUDIO_SLOTS,
-  FAIR,
   LEVELS,
   RULES,
-  SIZES,
   THEMES,
   TOPICS,
 } from '@/constants/game';
@@ -565,142 +564,8 @@ function handleStart() {
       </div>
     </div>
 
-    <!-- TAB 2: Rules & Questions -->
-    <div v-else-if="setupTab === 'rules'" class="space-y-3">
-      <!-- Board Size -->
-      <div class="rounded-2xl border-2 border-line bg-bg p-3.5">
-        <span class="block text-base font-extrabold text-ink">📐 حجم الساحة</span>
-        <div class="mt-2 flex flex-wrap gap-2">
-          <button
-            v-for="sz in SIZES"
-            :key="sz"
-            type="button"
-            :aria-pressed="s.size === sz"
-            class="min-h-11 cursor-pointer rounded-xl border-2 px-4 text-base font-extrabold transition"
-            :class="
-              s.size === sz
-                ? 'border-accent bg-accent text-accent-ink shadow-xs'
-                : 'border-line bg-card text-ink hover:border-accent'
-            "
-            @click="s.size = sz; ws.save()"
-          >
-            {{ ar(sz) }}×{{ ar(sz) }}
-          </button>
-        </div>
-      </div>
-
-      <!-- Toggleable Game Rules -->
-      <div class="rounded-2xl border-2 border-line bg-bg p-3.5">
-        <span class="block text-base font-extrabold text-ink">
-          🎮 قواعد اللعب (اضغط لتفعيل أو إيقاف أي قاعدة)
-        </span>
-        <p class="mt-0.5 text-xs text-ink/75">القواعد المفعّلة تظهر باللون المميز وعلامة ✓</p>
-        <div class="mt-2 flex flex-wrap gap-2">
-          <button
-            v-for="[rKey, rLabel] in RULES"
-            :key="rKey"
-            type="button"
-            :aria-pressed="s[rKey] !== false"
-            class="inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-xl border-2 px-3.5 text-base font-extrabold transition"
-            :class="
-              s[rKey] !== false
-                ? 'border-accent bg-accent text-accent-ink shadow-xs'
-                : 'border-line bg-card text-ink opacity-80 hover:border-accent'
-            "
-            @click="ws.toggleRule(rKey)"
-          >
-            <span>{{ rLabel }}</span>
-            <span class="text-xs opacity-90">{{ s[rKey] !== false ? '✓' : '✕' }}</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Fairness & Level -->
-      <div class="rounded-2xl border-2 border-line bg-bg p-3.5">
-        <span class="block text-base font-extrabold text-ink">⚖️ عدالة المنافسة</span>
-        <div class="mt-2 flex flex-wrap gap-2">
-          <button
-            v-for="[fKey, fLabel] in FAIR"
-            :key="fKey"
-            type="button"
-            :aria-pressed="s.fair === fKey"
-            class="min-h-11 cursor-pointer rounded-xl border-2 px-3.5 text-sm font-extrabold transition"
-            :class="
-              s.fair === fKey
-                ? 'border-accent bg-accent text-accent-ink'
-                : 'border-line bg-card text-ink hover:border-accent'
-            "
-            @click="s.fair = fKey; ws.save()"
-          >
-            {{ fLabel }}
-          </button>
-        </div>
-
-        <span class="mt-3 block text-base font-extrabold text-ink">
-          {{ showPerPlayerOwn ? 'المستوى للجميع (ويمكن تخصيصه لكل لاعب)' : 'المستوى' }}
-        </span>
-        <div class="mt-2 flex flex-wrap gap-2">
-          <button
-            v-for="(lv, idx) in LEVELS"
-            :key="idx"
-            type="button"
-            :aria-pressed="s.level === idx"
-            class="min-h-11 cursor-pointer rounded-xl border-2 px-4 text-base font-extrabold transition"
-            :class="
-              s.level === idx
-                ? 'border-accent bg-accent text-accent-ink'
-                : 'border-line bg-card text-ink hover:border-accent'
-            "
-            @click="ws.setLevel(idx)"
-          >
-            {{ lv[0] }}
-          </button>
-        </div>
-      </div>
-
-      <!-- Topics & Tables -->
-      <div class="rounded-2xl border-2 border-line bg-bg p-3.5">
-        <span class="block text-base font-extrabold text-ink">📚 موضوعات الأسئلة (اختر موضوعًا أو أكثر)</span>
-        <div class="mt-2 flex flex-wrap gap-2">
-          <button
-            v-for="[tKey, tLabel] in TOPICS"
-            :key="tKey"
-            type="button"
-            :aria-pressed="s.topics.includes(tKey)"
-            class="min-h-11 cursor-pointer rounded-xl border-2 px-3.5 text-base font-extrabold transition"
-            :class="
-              s.topics.includes(tKey)
-                ? 'border-accent bg-accent text-accent-ink'
-                : 'border-line bg-card text-ink hover:border-accent'
-            "
-            @click="ws.toggleTopic(tKey)"
-          >
-            {{ tLabel }}
-          </button>
-        </div>
-
-        <div v-if="showTables" class="mt-3">
-          <span class="block text-base font-extrabold text-ink">✖️ الجداول (للضرب والقسمة)</span>
-          <div class="mt-2 flex flex-wrap gap-2">
-            <button
-              v-for="tNum in ALLT"
-              :key="tNum"
-              type="button"
-              :aria-pressed="s.tables.includes(tNum)"
-              class="min-h-11 min-w-11 cursor-pointer rounded-xl border-2 text-lg font-extrabold transition"
-              :class="
-                s.tables.includes(tNum)
-                  ? 'border-accent bg-accent text-accent-ink'
-                  : 'border-line bg-card text-ink hover:border-accent'
-              "
-              @click="ws.toggleTable(tNum)"
-            >
-              {{ ar(tNum) }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- TAB 2: Rules & Questions (Shared MatchSettingsPanel) -->
+    <MatchSettingsPanel v-else-if="setupTab === 'rules'" />
 
     <!-- TAB 3: Appearance & Sound -->
     <div v-else class="space-y-3">
@@ -758,6 +623,31 @@ function handleStart() {
           >
             <i class="h-5 w-5 shrink-0 rounded-full border-2 border-white/60" :style="{ backgroundColor: hex }" />
             <span>{{ label }}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Players' Devices Audio Toggle (Req #22) -->
+      <div class="rounded-2xl border-2 border-line bg-bg p-3.5">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <span class="block text-base font-extrabold text-ink">📱 أصوات أجهزة اللاعبين</span>
+            <p class="mt-0.5 text-xs text-ink/75">
+              عند التفعيل، تعمل المؤثرات الصوتية والمعلّق على هواتف اللاعبين (ويمكنك إيقافها في أي وقت أثناء اللعب).
+            </p>
+          </div>
+          <button
+            type="button"
+            :aria-pressed="s.clientAudio !== false"
+            class="min-h-11 cursor-pointer rounded-xl border-2 px-4 text-sm font-extrabold transition"
+            :class="
+              s.clientAudio !== false
+                ? 'border-accent bg-accent text-accent-ink shadow-xs'
+                : 'border-line bg-card text-ink'
+            "
+            @click="s.clientAudio = !(s.clientAudio !== false); ws.save()"
+          >
+            {{ s.clientAudio !== false ? '🔊 مفعّل على أجهزة اللاعبين ✓' : '🔇 متوقف على أجهزة اللاعبين ✕' }}
           </button>
         </div>
       </div>
@@ -831,6 +721,9 @@ function handleStart() {
         <span class="rounded-full border border-line bg-bg px-2.5 py-1">🏠 {{ rm.name }}</span>
         <span class="rounded-full border border-line bg-bg px-2.5 py-1">
           {{ s.mode === 'multi' ? '📱 أكثر من جهاز' : '🖥️ جهاز واحد' }}
+        </span>
+        <span class="rounded-full border border-line bg-bg px-2.5 py-1">
+          {{ s.moveMode === 'speed' ? '⚡ سرعة الإجابة' : '🎲 النرد' }}
         </span>
         <span class="rounded-full border border-line bg-bg px-2.5 py-1">📐 {{ ar(s.size) }}×{{ ar(s.size) }}</span>
         <span class="rounded-full border border-line bg-bg px-2.5 py-1">{{ activeArenaTitle }}</span>

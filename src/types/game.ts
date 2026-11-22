@@ -3,6 +3,8 @@ export type ArenaId = 'classic' | 'horror' | 'funny' | 'space' | 'jungle';
 export type TopicId = 'mul' | 'div' | 'add' | 'sub' | 'sqrt' | 'geo';
 export type FairMode = 'each' | 'adaptive' | 'both' | 'one';
 export type PlayMode = 'multi' | 'device';
+export type MoveMode = 'dice' | 'speed';
+export type DecisionTimeSec = 0 | 5 | 10 | 15;
 export type RuleKey = 'ladders' | 'snakes' | 'pushback' | 'allq' | 'cards' | 'steal' | 'penalty';
 export type CardType = 'shield' | 'double' | 'freeze' | 'swap';
 export type GamePhase = 'busy' | 'ready' | 'q' | 'roll' | 'choose' | 'race' | 'end';
@@ -28,6 +30,9 @@ export interface RoomSettings {
   steal: boolean;
   penalty: boolean;
   mode: PlayMode;
+  moveMode: MoveMode;
+  decisionTime: DecisionTimeSec;
+  clientAudio: boolean;
   theme: ThemeColorId;
   arena: ArenaId;
 }
@@ -78,6 +83,7 @@ export interface Question {
   opts: string[];
   tbl?: number;
   extra?: number;
+  timeSec?: number;
   reveal?: { pick: number };
 }
 
@@ -151,6 +157,8 @@ export interface ClientViewMessage {
   dice: number;
   canFwd: boolean;
   targets: PushTarget[];
+  moveMode: MoveMode;
+  clientAudio: boolean;
   theme: ThemeColorId;
   board: BoardData;
   players: BoardPlayerView[];
@@ -168,8 +176,16 @@ export interface ClientViewMessage {
     fig: string;
     kind: 'calc' | 'geo';
     opts: string[];
+    timeSec?: number;
   };
   reveal?: { ans: string; pick: number } | null;
+}
+
+export interface ClientAudioPacket {
+  t: 'audio';
+  kind: 'sfx' | 'whistle' | 'comment';
+  sfx?: 'tick' | 'step' | 'ok' | 'bad' | 'up' | 'down' | 'win' | 'warn';
+  parts?: Array<string | { i: number; name: string; named?: boolean }>;
 }
 
 export interface FloatingFx {

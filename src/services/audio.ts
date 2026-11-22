@@ -14,6 +14,8 @@ const lastPick: Record<string, string> = {};
 
 let VOICE: Record<string, string> = {};
 let VNAMES: Record<string, string> = {};
+let manifestLoaded = false;
+let manifestPromise: Promise<void> | null = null;
 let fallbackAud: Record<string, string> | null = null;
 let fallbackPromise: Promise<Record<string, string>> | null = null;
 
@@ -48,16 +50,22 @@ async function getFallbackAud(): Promise<Record<string, string>> {
 
 export async function loadVoicesManifest(): Promise<void> {
   if (!/^https?:/.test(location.protocol)) return;
-  try {
-    const r = await fetch('/voices/manifest.json', { cache: 'no-cache' });
-    if (!r.ok) return;
-    const m = (await r.json()) as { clips?: Record<string, string>; names?: Record<string, string> };
-    VOICE = m.clips || {};
-    VNAMES = m.names || {};
-    loadedVoiceCount.value = Object.keys(VOICE).length;
-  } catch {
-    // Ignore
+  if (manifestLoaded) return;
+  if (!manifestPromise) {
+    manifestPromise = fetch('/voices/manifest.json', { cache: 'no-cache' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((m: { clips?: Record<string, string>; names?: Record<string, string> } | null) => {
+        if (!m) return;
+        VOICE = m.clips || {};
+        VNAMES = m.names || {};
+        loadedVoiceCount.value = Object.keys(VOICE).length;
+        manifestLoaded = true;
+      })
+      .catch(() => {
+        manifestPromise = null;
+      });
   }
+  await manifestPromise;
 }
 
 export function ensureAC(): void {
@@ -115,6 +123,9 @@ async function buf(k: string): Promise<AudioBuffer> {
     return cache['u:' + k]!;
   }
   if (cache[k]) return cache[k]!;
+  if (!manifestLoaded && /^https?:/.test(location.protocol)) {
+    await loadVoicesManifest();
+  }
   const file = k.startsWith('name:') ? VNAMES[k.slice(5)] : VOICE[k];
   if (file) {
     try {
@@ -124,7 +135,7 @@ async function buf(k: string): Promise<AudioBuffer> {
         return cache[k]!;
       }
     } catch {
-      // Fall through to embedded fallback
+      // Fall through to embedded fallback without caching robotic clip permanently
     }
   }
   const aud = await getFallbackAud();
@@ -133,8 +144,9 @@ async function buf(k: string): Promise<AudioBuffer> {
   const bin = atob(b64);
   const u = new Uint8Array(bin.length);
   for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
-  cache[k] = await decode(u.buffer);
-  return cache[k]!;
+  const decoded = await decode(u.buffer);
+  if (!file) cache[k] = decoded;
+  return decoded;
 }
 
 export function preloadAudio(): void {

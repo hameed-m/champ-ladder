@@ -1,3 +1,4 @@
+import { LEVELS } from '@/constants/game';
 import type { Question, TopicId } from '@/types/game';
 import { ar, pickOne, rnd, shuffle } from '@/utils/format';
 
@@ -9,7 +10,7 @@ interface QGenCfg {
   tables: number[];
 }
 
-type RawQ = Omit<Question, 'id' | 'topic' | 'level' | 'show'> & { show?: string };
+type RawQ = Omit<Question, 'id' | 'topic' | 'level' | 'show' | 'timeSec'> & { show?: string };
 
 function numOpts(ans: number, deltas: number[], min: number, fmt?: (v: number) => string): string[] {
   const set = new Set<number>([ans]);
@@ -25,8 +26,8 @@ function numOpts(ans: number, deltas: number[], min: number, fmt?: (v: number) =
   return shuffle([...set]).map(fmt || ar);
 }
 
-function calc(text: string, show: string, ans: number, deltas: number[], min: number, key: string): RawQ {
-  return { key, kind: 'calc', text, ans: ar(ans), show, opts: numOpts(ans, deltas, min) };
+function calc(text: string, show: string, ans: number, deltas: number[], min: number, key: string, extra = 0): RawQ {
+  return { key, kind: 'calc', text, ans: ar(ans), show, opts: numOpts(ans, deltas, min), extra };
 }
 
 const MULB: ReadonlyArray<[number, number]> = [
@@ -43,8 +44,9 @@ function qMul(level: number, tables: number[]): RawQ {
   const sw = Math.random() < 0.5;
   const x = sw ? b : a;
   const y = sw ? a : b;
+  const extra = x >= 7 && y >= 7 ? 3 : x >= 10 || y >= 10 ? 2 : 0;
   return {
-    ...calc(`${ar(x)} × ${ar(y)} = ؟`, `${ar(x)} × ${ar(y)} = ${ar(ans)}`, ans, [a, -a, b, -b, 10, -10, 1, -1, 2], 1, `m${a}x${b}`),
+    ...calc(`${ar(x)} × ${ar(y)} = ؟`, `${ar(x)} × ${ar(y)} = ${ar(ans)}`, ans, [a, -a, b, -b, 10, -10, 1, -1, 2], 1, `m${a}x${b}`, extra),
     tbl: a,
   };
 }
@@ -54,8 +56,9 @@ function qDiv(level: number, tables: number[]): RawQ {
   const bounds = MULB[level] || MULB[1]!;
   const b = rnd(bounds[0], bounds[1]);
   const t = a * b;
+  const extra = t >= 60 ? 4 : t >= 30 ? 2 : 0;
   return {
-    ...calc(`${ar(t)} ÷ ${ar(a)} = ؟`, `${ar(t)} ÷ ${ar(a)} = ${ar(b)}`, b, [1, -1, 2, -2, 3, -3], a === 1 ? 1 : 0, `d${t}/${a}`),
+    ...calc(`${ar(t)} ÷ ${ar(a)} = ؟`, `${ar(t)} ÷ ${ar(a)} = ${ar(b)}`, b, [1, -1, 2, -2, 3, -3], a === 1 ? 1 : 0, `d${t}/${a}`, extra),
     tbl: a,
   };
 }
@@ -75,25 +78,27 @@ const NEAR = [1, -1, 2, -2, 10, -10, 9, -9, 11, -11];
 function qAdd(level: number): RawQ {
   const [a, b] = addPair(level);
   const c = a + b;
-  return calc(`${ar(a)} + ${ar(b)} = ؟`, `${ar(a)} + ${ar(b)} = ${ar(c)}`, c, NEAR, 1, `a${a}+${b}`);
+  const extra = a >= 100 || b >= 100 ? 5 : a >= 25 || b >= 25 ? 2 : 0;
+  return calc(`${ar(a)} + ${ar(b)} = ؟`, `${ar(a)} + ${ar(b)} = ${ar(c)}`, c, NEAR, 1, `a${a}+${b}`, extra);
 }
 
 function qSub(level: number): RawQ {
   const [a, b] = addPair(level);
   const c = a + b;
-  return calc(`${ar(c)} − ${ar(b)} = ؟`, `${ar(c)} − ${ar(b)} = ${ar(a)}`, a, NEAR, 0, `s${c}-${b}`);
+  const extra = c >= 150 ? 6 : c >= 30 ? 2 : 0;
+  return calc(`${ar(c)} − ${ar(b)} = ؟`, `${ar(c)} − ${ar(b)} = ${ar(a)}`, a, NEAR, 0, `s${c}-${b}`, extra);
 }
 
 function qSqrt(level: number): RawQ {
   if (level === 0) {
     const r = rnd(1, 10);
     const sq = r * r;
-    return calc(`√${ar(sq)} = ؟`, `√${ar(sq)} = ${ar(r)}`, r, [1, -1, 2, -2, 3, -3, 4], 1, `sq${sq}`);
+    return calc(`√${ar(sq)} = ؟`, `√${ar(sq)} = ${ar(r)}`, r, [1, -1, 2, -2, 3, -3, 4], 1, `sq${sq}`, 1);
   }
   if (level === 1) {
     const r = rnd(2, 15);
     const sq = r * r;
-    return calc(`√${ar(sq)} = ؟`, `√${ar(sq)} = ${ar(r)}`, r, [1, -1, 2, -2, 3, -3, 5, -5], 1, `sq${sq}`);
+    return calc(`√${ar(sq)} = ؟`, `√${ar(sq)} = ${ar(r)}`, r, [1, -1, 2, -2, 3, -3, 5, -5], 1, `sq${sq}`, sq >= 144 ? 3 : 1);
   }
   if (Math.random() < 0.45) {
     const a = rnd(2, 12);
@@ -102,11 +107,11 @@ function qSqrt(level: number): RawQ {
     const sqA = a * a;
     const sqB = b * b;
     const ans = op === '+' ? a + b : a - b;
-    return calc(`√${ar(sqA)} ${op} √${ar(sqB)} = ؟`, `√${ar(sqA)} ${op} √${ar(sqB)} = ${ar(ans)}`, ans, [1, -1, 2, -2, 3, -3, 4, -4], 0, `sqe${sqA}${op}${sqB}`);
+    return calc(`√${ar(sqA)} ${op} √${ar(sqB)} = ؟`, `√${ar(sqA)} ${op} √${ar(sqB)} = ${ar(ans)}`, ans, [1, -1, 2, -2, 3, -3, 4, -4], 0, `sqe${sqA}${op}${sqB}`, 6);
   }
   const r = rnd(4, 20);
   const sq = r * r;
-  return calc(`√${ar(sq)} = ؟`, `√${ar(sq)} = ${ar(r)}`, r, [1, -1, 2, -2, 3, -3, 4, -4, 10, -10], 1, `sq${sq}`);
+  return calc(`√${ar(sq)} = ؟`, `√${ar(sq)} = ${ar(r)}`, r, [1, -1, 2, -2, 3, -3, 4, -4, 10, -10], 1, `sq${sq}`, sq >= 196 ? 4 : 2);
 }
 
 const svgW = (i: string) =>
@@ -139,29 +144,31 @@ const shapeName = (pool: string[]): RawQ => {
   const k = pickOne(pool);
   const sh = SH[k]!;
   const o = shuffle(pool.filter((x) => x !== k)).slice(0, 3).map((x) => SH[x]![0]);
-  return { key: 'gn' + k, kind: 'geo', text: 'ما اسم هذا الشكل؟', fig: svgW(sh[2]), ans: sh[0], opts: shuffle([sh[0], ...o]) };
+  return { key: 'gn' + k, kind: 'geo', text: 'ما اسم هذا الشكل؟', fig: svgW(sh[2]), ans: sh[0], opts: shuffle([sh[0], ...o]), extra: 3 };
 };
 
 const cm = (v: number) => `${ar(v)} سم`;
 const cm2 = (v: number) => `${ar(v)} سم²`;
 const deg = (v: number) => `${ar(v)}°`;
 
-const gNum = (key: string, text: string, ans: number, deltas: number[], min: number, fmt?: (v: number) => string, fig?: string): RawQ => ({
+const gNum = (key: string, text: string, ans: number, deltas: number[], min: number, fmt?: (v: number) => string, fig?: string, extra = 6): RawQ => ({
   key,
   kind: 'geo',
   text,
   fig,
   ans: (fmt || ar)(ans),
   opts: numOpts(ans, deltas, min, fmt),
+  extra,
 });
 
-const gTxt = (key: string, text: string, ans: string, others: string[], fig?: string): RawQ => ({
+const gTxt = (key: string, text: string, ans: string, others: string[], fig?: string, extra = 5): RawQ => ({
   key,
   kind: 'geo',
   text,
   fig,
   ans,
   opts: shuffle([ans, ...others]),
+  extra,
 });
 
 function angleFig(a: number): string {
@@ -182,34 +189,34 @@ const GEO: Array<Array<() => RawQ>> = [
     () => shapeName(['square', 'rect', 'tri', 'circle', 'pent', 'hex']),
     () => {
       const k = pickOne(['tri', 'square', 'rect', 'pent', 'hex']);
-      return gNum('gs' + k, 'كم ضلعًا لهذا الشكل؟', SH[k]![1], [1, -1, 2, -2, 3], 1, ar, svgW(SH[k]![2]));
+      return gNum('gs' + k, 'كم ضلعًا لهذا الشكل؟', SH[k]![1], [1, -1, 2, -2, 3], 1, ar, svgW(SH[k]![2]), 4);
     },
-    () => gTxt('gc', 'أي شكل ليس له أضلاع ولا رؤوس؟', 'الدائرة', ['المربع', 'المثلث', 'المستطيل']),
-    () => gTxt('ge', 'أي شكل أضلاعه الأربعة متساوية وزواياه قائمة؟', 'المربع', ['المثلث', 'الدائرة', 'المسدّس']),
-    () => gNum('gt', 'كم رأسًا للمثلث؟', 3, [1, 2, 3, -1], 1),
+    () => gTxt('gc', 'أي شكل ليس له أضلاع ولا رؤوس؟', 'الدائرة', ['المربع', 'المثلث', 'المستطيل'], undefined, 4),
+    () => gTxt('ge', 'أي شكل أضلاعه الأربعة متساوية وزواياه قائمة؟', 'المربع', ['المثلث', 'الدائرة', 'المسدّس'], undefined, 5),
+    () => gNum('gt', 'كم رأسًا للمثلث؟', 3, [1, 2, 3, -1], 1, ar, undefined, 3),
   ],
   [
     () => shapeName(['pent', 'hex', 'oct', 'rhom', 'tri']),
     () => {
       const k = pickOne(['pent', 'hex', 'oct']);
-      return gNum('gv' + k, 'كم رأسًا لهذا الشكل؟', SH[k]![1], [1, -1, 2, -2], 1, ar, svgW(SH[k]![2]));
+      return gNum('gv' + k, 'كم رأسًا لهذا الشكل؟', SH[k]![1], [1, -1, 2, -2], 1, ar, svgW(SH[k]![2]), 5);
     },
     () => {
       const ty = pickOne(['acute', 'right', 'obtuse'] as const);
       const a = { acute: rnd(30, 70), right: 90, obtuse: rnd(110, 150) }[ty];
       const L = { acute: 'حادة', right: 'قائمة', obtuse: 'منفرجة' };
-      return gTxt('ga' + ty, 'ما نوع هذه الزاوية؟', L[ty], Object.values(L).filter((x) => x !== L[ty]).concat('مستقيمة'), angleFig(a));
+      return gTxt('ga' + ty, 'ما نوع هذه الزاوية؟', L[ty], Object.values(L).filter((x) => x !== L[ty]).concat('مستقيمة'), angleFig(a), 5);
     },
-    () => gNum('gr', 'كم زاوية قائمة في المستطيل؟', 4, [-1, -2, -3, 1], 0),
-    () => gNum('g90', 'كم درجة قياس الزاوية القائمة؟', 90, [-45, 90, -30, 30], 1, deg),
+    () => gNum('gr', 'كم زاوية قائمة في المستطيل؟', 4, [-1, -2, -3, 1], 0, ar, undefined, 4),
+    () => gNum('g90', 'كم درجة قياس الزاوية القائمة؟', 90, [-45, 90, -30, 30], 1, deg, undefined, 4),
     () => {
       const s = rnd(2, 12);
-      return gNum('gps' + s, `مربع طول ضلعه ${cm(s)}. كم محيطه؟`, 4 * s, [s, -s, 2, -2, 4, s * s - 4 * s || 5], 1, cm);
+      return gNum('gps' + s, `مربع طول ضلعه ${cm(s)}. كم محيطه؟`, 4 * s, [s, -s, 2, -2, 4, s * s - 4 * s || 5], 1, cm, undefined, 7);
     },
     () => {
       const w = rnd(4, 12);
       const h = rnd(2, w - 1);
-      return gNum('gpr' + w + h, 'كم محيط هذا المستطيل بالسنتيمتر؟', 2 * (w + h), [-(w + h), 2, -2, 4, -4, w, -h], 1, cm, rectFig(w, h));
+      return gNum('gpr' + w + h, 'كم محيط هذا المستطيل بالسنتيمتر؟', 2 * (w + h), [-(w + h), 2, -2, 4, -4, w, -h], 1, cm, rectFig(w, h), 8);
     },
     () => {
       const t = pickOne([
@@ -222,6 +229,8 @@ const GEO: Array<Array<() => RawQ>> = [
         `مثلث أطوال أضلاعه ${ar(t[1])} و${ar(t[2])} و${ar(t[3])} سم. ما نوعه؟`,
         t[0],
         ['متساوي الأضلاع', 'متساوي الساقين', 'مختلف الأضلاع'].filter((x) => x !== t[0]).concat('شبه منحرف'),
+        undefined,
+        7,
       );
     },
   ],
@@ -229,41 +238,42 @@ const GEO: Array<Array<() => RawQ>> = [
     () => {
       const w = rnd(4, 15);
       const h = rnd(2, 9);
-      return gNum('gar' + w + h, 'كم مساحة هذا المستطيل؟', w * h, [w, -w, h, -h, 2 * (w + h) - w * h || 3, 10], 1, cm2, rectFig(w, h));
+      return gNum('gar' + w + h, 'كم مساحة هذا المستطيل؟', w * h, [w, -w, h, -h, 2 * (w + h) - w * h || 3, 10], 1, cm2, rectFig(w, h), 8);
     },
     () => {
       const s = rnd(3, 12);
-      return gNum('gas' + s, `مربع طول ضلعه ${cm(s)}. كم مساحته؟`, s * s, [s, -s, 4 * s - s * s || 2, 1, -1], 1, cm2);
+      return gNum('gas' + s, `مربع طول ضلعه ${cm(s)}. كم مساحته؟`, s * s, [s, -s, 4 * s - s * s || 2, 1, -1], 1, cm2, undefined, 7);
     },
     () => {
       const a = rnd(30, 80);
       const b = rnd(30, 80);
-      return gNum('g3' + a + b, `في مثلث، زاويتان قياسهما ${deg(a)} و${deg(b)}. كم قياس الزاوية الثالثة؟`, 180 - a - b, [10, -10, 20, -5, 5], 1, deg);
+      return gNum('g3' + a + b, `في مثلث، زاويتان قياسهما ${deg(a)} و${deg(b)}. كم قياس الزاوية الثالثة؟`, 180 - a - b, [10, -10, 20, -5, 5], 1, deg, undefined, 10);
     },
     () => {
       const l = rnd(6, 15);
       const w = rnd(2, l - 1);
-      return gNum('gw' + l + w, `مستطيل محيطه ${cm(2 * (l + w))} وطوله ${cm(l)}. كم عرضه؟`, w, [1, -1, 2, -2, l - w], 1, cm);
+      return gNum('gw' + l + w, `مستطيل محيطه ${cm(2 * (l + w))} وطوله ${cm(l)}. كم عرضه؟`, w, [1, -1, 2, -2, l - w], 1, cm, undefined, 10);
     },
     () => {
       const a = rnd(3, 9);
       const b = rnd(3, 9);
       const c = rnd(3, 9);
-      return gNum('gpt' + a + b + c, `مثلث أطوال أضلاعه ${ar(a)} و${ar(b)} و${ar(c)} سم. كم محيطه؟`, a + b + c, [1, -1, 2, -2, 3, -3], 1, cm);
+      return gNum('gpt' + a + b + c, `مثلث أطوال أضلاعه ${ar(a)} و${ar(b)} و${ar(c)} سم. كم محيطه؟`, a + b + c, [1, -1, 2, -2, 3, -3], 1, cm, undefined, 8);
     },
-    () => gNum('g360', 'كم مجموع قياسات زوايا الشكل الرباعي؟', 360, [-180, -270, 180, -90], 1, deg),
-    () => gNum('g180', 'كم مجموع قياسات زوايا المثلث؟', 180, [-90, 180, 90, -45], 1, deg),
+    () => gNum('g360', 'كم مجموع قياسات زوايا الشكل الرباعي؟', 360, [-180, -270, 180, -90], 1, deg, undefined, 5),
+    () => gNum('g180', 'كم مجموع قياسات زوايا المثلث؟', 180, [-90, 180, 90, -45], 1, deg, undefined, 5),
     () =>
       pickOne([
-        () => gNum('gcfaces', 'كم وجهًا للمكعب؟', 6, [-2, 2, -1, 6], 1),
-        () => gNum('gcedges', 'كم حرفًا للمكعب؟', 12, [-4, -6, 2, 6], 1),
-        () => gNum('gcverts', 'كم رأسًا للمكعب؟', 8, [-2, -4, 2, 4], 1),
+        () => gNum('gcfaces', 'كم وجهًا للمكعب؟', 6, [-2, 2, -1, 6], 1, ar, undefined, 5),
+        () => gNum('gcedges', 'كم حرفًا للمكعب؟', 12, [-4, -6, 2, 6], 1, ar, undefined, 6),
+        () => gNum('gcverts', 'كم رأسًا للمكعب؟', 8, [-2, -4, 2, 4], 1, ar, undefined, 5),
       ])(),
   ],
 ];
 
 function qGeo(level: number): RawQ {
-  return { ...pickOne(GEO[level] || GEO[1]!)(), kind: 'geo', extra: 8 };
+  const q = pickOne(GEO[level] || GEO[1]!)();
+  return { ...q, kind: 'geo', extra: q.extra ?? 6 };
 }
 
 export function generateQuestion(cfg: QGenCfg, recentKeys: string[]): Question {
@@ -287,11 +297,15 @@ export function generateQuestion(cfg: QGenCfg, recentKeys: string[]): Question {
   recentKeys.push(x.key);
   if (recentKeys.length > 10) recentKeys.shift();
 
+  const baseSec = LEVELS[level]?.[1] ?? 18;
+  const timeSec = baseSec + (x.extra || 0);
+
   return {
     ...x,
     id: ++qSeq,
     topic: k,
     level,
+    timeSec,
     show: x.show || x.ans,
   };
 }

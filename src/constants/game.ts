@@ -1,4 +1,4 @@
-import type { ArenaId, CardType, FairMode, RoomSettings, RuleKey, ThemeColorId, TopicId } from '@/types/game';
+import type { ArenaId, CardType, DecisionTimeSec, FairMode, MoveMode, RoomSettings, RuleKey, ThemeColorId, TopicId } from '@/types/game';
 
 export const APP_TITLE_AR = 'تحدي الأبطال';
 export const APP_TITLE_EN = 'Champions Challenge';
@@ -17,9 +17,21 @@ export const OFF: ReadonlyArray<[number, number]> = [
 export const SIZES = [6, 7, 8, 9, 10] as const;
 
 export const LEVELS: ReadonlyArray<[string, number]> = [
-  ['سهل', 20],
-  ['متوسط', 15],
-  ['صعب', 12],
+  ['سهل', 12],
+  ['متوسط', 18],
+  ['صعب', 25],
+];
+
+export const MOVE_MODES: ReadonlyArray<[MoveMode, string, string]> = [
+  ['dice', '🎲 النرد (كلاسيكي)', 'ارمِ النرد بعد الإجابة الصحيحة لتحديد عدد الخطوات (١–٦)'],
+  ['speed', '⚡ سرعة الإجابة', 'كلما أجبت أسرع حصلت على خطوات أكثر (١–٦ خطوات مباشرة)'],
+];
+
+export const DECISION_TIMES: ReadonlyArray<[DecisionTimeSec, string]> = [
+  [5, '٥ ثوانٍ'],
+  [10, '١٠ ثوانٍ'],
+  [15, '١٥ ثانية'],
+  [0, 'بدون مؤقت'],
 ];
 
 export const TOPICS: ReadonlyArray<[TopicId, string]> = [
@@ -93,6 +105,9 @@ export const DEF_SETTINGS: RoomSettings = {
   steal: true,
   penalty: true,
   mode: 'multi',
+  moveMode: 'dice',
+  decisionTime: 10,
+  clientAudio: true,
   theme: 'green',
   arena: 'classic',
 };
